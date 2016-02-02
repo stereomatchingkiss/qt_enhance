@@ -10,9 +10,11 @@ TARGET = qt_enhance
 TEMPLATE = lib
 CONFIG += staticlib
 
-SOURCES += img_region_selector.cpp
+SOURCES += img_region_selector.cpp \
+    rubber_band.cpp
 
-HEADERS += img_region_selector.hpp
+HEADERS += img_region_selector.hpp \
+    rubber_band.hpp
 unix {
     target.path = /usr/lib
     INSTALLS += target
