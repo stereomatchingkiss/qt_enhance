@@ -27,12 +27,19 @@ void img_region_selector::set_pixmap(const QPixmap &pix)
         auto const pre_size = pixmap()->size();
         auto const cur_size = pix.size();
         if(pre_size != pix.size()){
-            for(auto *rb : rubber_band_){
+            for(auto it = std::begin(rubber_band_);
+                it != std::end(rubber_band_);){
                 float const width_ratio = cur_size.width() / static_cast<float>(pre_size.width());
                 float const height_ratio = cur_size.height() / static_cast<float>(pre_size.height());
                 int const width = static_cast<int>(pre_size.width() * width_ratio);
                 int const height = static_cast<int>(pre_size.height() * height_ratio);
-                rb->resize(width, height);
+                if(width >= 50 && height >= 50){
+                    (*it)->resize(width, height);
+                    ++it;
+                }else{
+                    delete *it;
+                    it = rubber_band_.erase(it);
+                }
             }
         }
         setPixmap(pix);
@@ -162,6 +169,7 @@ void img_region_selector::mouseReleaseEvent(QMouseEvent *e)
     move_rubber_band_ = false;
     (*cur_rband)->mouseReleaseEvent(e);
     change_cur_band_color(QColor("blue"));
+    cur_rband = std::rend(rubber_band_);
     QLabel::mouseReleaseEvent(e);
 }
 
