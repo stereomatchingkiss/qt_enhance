@@ -48,26 +48,23 @@ void img_region_selector::set_pixmap(const QPixmap &pix)
 
 void img_region_selector::keyPressEvent(QKeyEvent *e)
 {
+    //qDebug()<<__func__;
     if(e->key() == Qt::Key_Shift){
         shift_key_press_ = true;
-    }
-    if(e->key() == Qt::Key_Control){
+    }else if(e->key() == Qt::Key_Control){
         ctrl_key_press_ = true;
-    }
-    if(e->key() == Qt::Key_Delete){
+    }else if(e->key() == Qt::Key_Delete){
         delete_key_press_ = true;
+    }else{
+        QLabel::keyPressEvent(e);
     }
-
-    QLabel::keyPressEvent(e);
 }
 
-void img_region_selector::keyReleaseEvent(QKeyEvent *e)
-{
+void img_region_selector::keyReleaseEvent(QKeyEvent*)
+{    
     ctrl_key_press_ = false;
     shift_key_press_ = false;
     delete_key_press_ = false;
-
-    QLabel::keyReleaseEvent(e);
 }
 
 img_region_selector::rband_iter
@@ -106,6 +103,7 @@ bool img_region_selector::is_valid_ker_press() const
 
 void img_region_selector::mousePressEvent(QMouseEvent *e)
 {
+    //qDebug()<<"mouse press";
     if(!is_valid_ker_press()){
         return;
     }
@@ -136,11 +134,12 @@ void img_region_selector::mousePressEvent(QMouseEvent *e)
         }
     }
 
-    QLabel::mousePressEvent(e);
+    //QLabel::mousePressEvent(e);
 }
 
 void img_region_selector::mouseMoveEvent(QMouseEvent *e)
 {
+    //qDebug()<<__func__;
     if(!is_valid_ker_press()){
         return;
     }
@@ -162,6 +161,7 @@ void img_region_selector::mouseMoveEvent(QMouseEvent *e)
 
 void img_region_selector::mouseReleaseEvent(QMouseEvent *e)
 {
+    //qDebug()<<__func__;
     if(!is_valid_ker_press()){
         return;
     }
@@ -172,7 +172,7 @@ void img_region_selector::mouseReleaseEvent(QMouseEvent *e)
         change_cur_band_color(QColor("blue"));
         cur_rband = std::rend(rubber_band_);
     }
-    QLabel::mouseReleaseEvent(e);
+    //QLabel::mouseReleaseEvent(e);
 }
 
 void img_region_selector::cursor_changed(Qt::CursorShape shape)
