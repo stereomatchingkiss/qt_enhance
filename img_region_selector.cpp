@@ -29,6 +29,9 @@ void img_region_selector::keyPressEvent(QKeyEvent *e)
     if(e->key() == Qt::Key_Control){
         ctrl_key_press_ = true;
     }
+    if(e->key() == Qt::Key_Delete){
+        delete_key_press_ = true;
+    }
 
     QLabel::keyPressEvent(e);
 }
@@ -37,6 +40,7 @@ void img_region_selector::keyReleaseEvent(QKeyEvent *e)
 {
     ctrl_key_press_ = false;
     shift_key_press_ = false;
+    delete_key_press_ = false;
 
     QLabel::keyReleaseEvent(e);
 }
@@ -67,8 +71,8 @@ void img_region_selector::create_rubber_band(QPoint const &pos)
 
 bool img_region_selector::is_valid_ker_press() const
 {
-    return shift_key_press_ && ctrl_key_press_ &&
-            delete_key_press_;
+    return !(shift_key_press_ && ctrl_key_press_ &&
+            delete_key_press_);
 }
 
 void img_region_selector::mousePressEvent(QMouseEvent *e)
@@ -78,16 +82,24 @@ void img_region_selector::mousePressEvent(QMouseEvent *e)
     }
 
     bool const click_left_mouse = e->button() == Qt::LeftButton;
-    if(click_left_mouse && shift_key_press_){
+    if(click_left_mouse){
         origin_ = e->pos();
         cur_rband = select_rubber_band(origin_);
 
-        if(cur_rband != std::rend(rubber_band_)){
-            rubber_band_offset_ = e->pos() - (*cur_rband)->pos();
-            move_rubber_band_ = true;
-            change_cur_band_color(QColor("red"));
-        }else{
-            create_rubber_band(origin_);
+        if(shift_key_press_){
+            if(cur_rband != std::rend(rubber_band_)){
+                rubber_band_offset_ = e->pos() - (*cur_rband)->pos();
+                move_rubber_band_ = true;
+                change_cur_band_color(QColor("red"));
+            }else{
+                create_rubber_band(origin_);
+            }
+        }else if(delete_key_press_){
+            if(cur_rband != std::rend(rubber_band_)){
+                delete *cur_rband;
+                rubber_band_.erase((cur_rband+1).base());
+                cur_rband = std::rend(rubber_band_);
+            }
         }
     }
 
