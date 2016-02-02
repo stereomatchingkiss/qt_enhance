@@ -32,10 +32,13 @@ private:
     void change_cur_band_color(QColor const &color);
     void create_rubber_band(QPoint const &pos);
 
+    bool is_valid_ker_press() const;
+
     rband_iter select_rubber_band(QPoint const &pos);
 
     bool ctrl_key_press_;
     rband_iter cur_rband;
+    bool delete_key_press_;
     bool move_rubber_band_;
     QPoint origin_;
     std::vector<QRubberBand*> rubber_band_;

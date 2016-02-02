@@ -13,6 +13,7 @@ img_region_selector::img_region_selector(QWidget *parent) :
     QLabel(parent),
     ctrl_key_press_{false},
     cur_rband{std::rend(rubber_band_)},
+    delete_key_press_{false},
     move_rubber_band_{false},
     origin_(0, 0),
     rubber_band_offset_(0, 0),
@@ -64,9 +65,15 @@ void img_region_selector::create_rubber_band(QPoint const &pos)
     cur_rband = std::rbegin(rubber_band_);
 }
 
+bool img_region_selector::is_valid_ker_press() const
+{
+    return shift_key_press_ && ctrl_key_press_ &&
+            delete_key_press_;
+}
+
 void img_region_selector::mousePressEvent(QMouseEvent *e)
 {
-    if(shift_key_press_ && ctrl_key_press_){
+    if(!is_valid_ker_press()){
         return;
     }
 
@@ -89,7 +96,7 @@ void img_region_selector::mousePressEvent(QMouseEvent *e)
 
 void img_region_selector::mouseMoveEvent(QMouseEvent *e)
 {
-    if(shift_key_press_ && ctrl_key_press_){
+    if(!is_valid_ker_press()){
         return;
     }
 
@@ -106,6 +113,10 @@ void img_region_selector::mouseMoveEvent(QMouseEvent *e)
 
 void img_region_selector::mouseReleaseEvent(QMouseEvent *e)
 {
+    if(!is_valid_ker_press()){
+        return;
+    }
+
     move_rubber_band_ = false;
     change_cur_band_color(QColor("blue"));
     QLabel::mouseReleaseEvent(e);
@@ -113,10 +124,12 @@ void img_region_selector::mouseReleaseEvent(QMouseEvent *e)
 
 void img_region_selector::change_cur_band_color(const QColor &color)
 {
-    auto *g_effect =
-            qobject_cast<QGraphicsColorizeEffect*>((*cur_rband)->graphicsEffect());
-    if(g_effect){
-        g_effect->setColor(color);
+    if(cur_rband != std::rend(rubber_band_)){
+        auto *g_effect =
+                qobject_cast<QGraphicsColorizeEffect*>((*cur_rband)->graphicsEffect());
+        if(g_effect){
+            g_effect->setColor(color);
+        }
     }
 }
 
