@@ -26,6 +26,10 @@ protected:
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
 
+private slots:
+    void cursor_changed(Qt::CursorShape shape);
+    void unset_cursor();
+
 private:
     using rband_iter = std::vector<rubber_band*>::reverse_iterator;
 

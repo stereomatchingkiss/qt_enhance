@@ -22,6 +22,10 @@ public:
     void mouseMoveEvent(QMouseEvent * event) override;
     void mouseReleaseEvent(QMouseEvent * event) override;
 
+signals:
+    void cursor_changed(Qt::CursorShape shape);
+    void unset_cursor();
+
 private:
     enum class tweak_part
     {

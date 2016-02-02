@@ -66,6 +66,10 @@ void img_region_selector::create_rubber_band(QPoint const &pos)
     g_effect->setColor(QColor("red"));
     rubber_band_.emplace_back(rb);
     rb->show();
+    connect(rb, SIGNAL(cursor_changed(Qt::CursorShape)),
+            this, SLOT(cursor_changed(Qt::CursorShape)));
+    connect(rb, SIGNAL(unset_cursor()),
+            this, SLOT(unset_cursor()));
     cur_rband = std::rbegin(rubber_band_);
 }
 
@@ -141,6 +145,16 @@ void img_region_selector::mouseReleaseEvent(QMouseEvent *e)
     (*cur_rband)->mouseReleaseEvent(e);
     change_cur_band_color(QColor("blue"));
     QLabel::mouseReleaseEvent(e);
+}
+
+void img_region_selector::cursor_changed(Qt::CursorShape shape)
+{
+    setCursor(shape);
+}
+
+void img_region_selector::unset_cursor()
+{
+    unsetCursor();
 }
 
 void img_region_selector::change_cur_band_color(const QColor &color)

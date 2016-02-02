@@ -50,7 +50,9 @@ void rubber_band::mousePressEvent(QMouseEvent *e)
             tweaking_part_ = tweak_part::right;
         }
 
-        setCursor(cursor_map_[static_cast<int>(tweaking_part_)]);
+        auto const cursor = cursor_map_[static_cast<int>(tweaking_part_)];
+        setCursor(cursor);
+        emit cursor_changed(cursor);
 
         //qDebug()<<"set "<<tweaking_part_<<" cursor";
 
@@ -98,6 +100,7 @@ void rubber_band::mouseReleaseEvent(QMouseEvent*)
 {    
     tweaking_part_ = tweak_part::none;
     unsetCursor();
+    emit unset_cursor();
 }
 
 }
