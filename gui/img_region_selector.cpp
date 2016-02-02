@@ -21,6 +21,24 @@ img_region_selector::img_region_selector(QWidget *parent) :
 {        
 }
 
+void img_region_selector::set_pixmap(const QPixmap &pix)
+{
+    if(pixmap()){
+        auto const pre_size = pixmap()->size();
+        auto const cur_size = pix.size();
+        if(pre_size != pix.size()){
+            for(auto *rb : rubber_band_){
+                float const width_ratio = cur_size.width() / static_cast<float>(pre_size.width());
+                float const height_ratio = cur_size.height() / static_cast<float>(pre_size.height());
+                int const width = static_cast<int>(pre_size.width() * width_ratio);
+                int const height = static_cast<int>(pre_size.height() * height_ratio);
+                rb->resize(width, height);
+            }
+        }
+        setPixmap(pix);
+    }
+}
+
 void img_region_selector::keyPressEvent(QKeyEvent *e)
 {
     if(e->key() == Qt::Key_Shift){

@@ -19,6 +19,13 @@ class img_region_selector : public QLabel
 public:
     explicit img_region_selector(QWidget *parent = nullptr);
 
+    /**
+     * This api will resize the rubber band if current
+     * pixmap size do not equal to the old one
+     * @param pix current pixmap
+     */
+    void set_pixmap(QPixmap const &pix);
+
 protected:    
     void keyPressEvent(QKeyEvent *e) override;
     void keyReleaseEvent(QKeyEvent *e) override;
