@@ -36,13 +36,14 @@ private:
 
     rband_iter select_rubber_band(QPoint const &pos);
 
-    bool ctrl_key_press_;
+    bool ctrl_key_press_; //resize rubber band
     rband_iter cur_rband;
-    bool delete_key_press_;
+    bool delete_key_press_; //delete rubber band
     bool move_rubber_band_;
     QPoint origin_;
     std::vector<QRubberBand*> rubber_band_;
     QPoint rubber_band_offset_;
+    //move rubber band or create new rubber band
     bool shift_key_press_;
 };
 
