@@ -167,9 +167,11 @@ void img_region_selector::mouseReleaseEvent(QMouseEvent *e)
     }
 
     move_rubber_band_ = false;
-    (*cur_rband)->mouseReleaseEvent(e);
-    change_cur_band_color(QColor("blue"));
-    cur_rband = std::rend(rubber_band_);
+    if(cur_rband != std::rend(rubber_band_)){
+        (*cur_rband)->mouseReleaseEvent(e);
+        change_cur_band_color(QColor("blue"));
+        cur_rband = std::rend(rubber_band_);
+    }
     QLabel::mouseReleaseEvent(e);
 }
 
