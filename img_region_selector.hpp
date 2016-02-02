@@ -35,7 +35,6 @@ private:
     bool is_valid_ker_press() const;
 
     rband_iter select_rubber_band(QPoint const &pos);
-    void set_resize_info();
 
     bool ctrl_key_press_; //resize rubber band
     rband_iter cur_rband;
@@ -45,10 +44,7 @@ private:
     std::vector<rubber_band*> rubber_band_;
     QPoint rubber_band_offset_;
     //move rubber band or create new rubber band
-    bool shift_key_press_;
-
-    QPoint tl_, tr_, bl_, br_;
-    QString tweaking_part_;
+    bool shift_key_press_;  
 };
 
 } /*! @} End of Doxygen Groups*/

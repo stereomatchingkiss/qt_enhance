@@ -57,41 +57,6 @@ img_region_selector::select_rubber_band(QPoint const &pos)
                         func);
 }
 
-void img_region_selector::set_resize_info()
-{
-    QPoint const pt = origin_;
-    QRect const rg = (*cur_rband)->geometry();
-    if(rg.isValid()){
-        tl_ = rg.topLeft();
-        tr_ = rg.topRight();
-        bl_ = rg.bottomLeft();
-        br_ = rg.bottomRight();
-        QPoint const off(3, 3), offx(4, -3), offy(-3, 4);
-
-        if(QRect(tl_-off , tl_+off).contains(pt)){
-            tweaking_part_ = "topLeft"; setCursor(Qt::SizeFDiagCursor);
-        }else if(QRect(tr_-off, tr_+off).contains(pt)){
-            tweaking_part_ = "topRight"; setCursor(Qt::SizeBDiagCursor);
-        }else if(QRect(bl_-off, bl_+off ).contains(pt)){
-            tweaking_part_ = "bottomLeft"; setCursor(Qt::SizeBDiagCursor);
-        }else if(QRect(br_-off, br_+off).contains(pt)){
-            tweaking_part_ = "bottomRight"; setCursor(Qt::SizeFDiagCursor);
-        }else if(QRect(tl_+offx, tr_-offx).contains(pt)){
-            tweaking_part_ = "top"; setCursor(Qt::SizeVerCursor);
-        }else if(QRect(bl_+offx, br_-offx).contains(pt)){
-            tweaking_part_ = "bottom"; setCursor(Qt::SizeVerCursor);
-        }else if(QRect(tl_+offy, bl_-offy).contains(pt)){
-            tweaking_part_ = "left"; setCursor(Qt::SizeHorCursor);
-        }else if(QRect(tr_+offy, br_-offy).contains ( pt ) ){
-            tweaking_part_ = "right"; setCursor(Qt::SizeHorCursor);
-        }
-
-        if(!tweaking_part_.isEmpty()){
-            return;
-        }
-    }
-}
-
 void img_region_selector::create_rubber_band(QPoint const &pos)
 {
     auto *rb = new rubber_band(this);
@@ -163,7 +128,7 @@ void img_region_selector::mouseMoveEvent(QMouseEvent *e)
         }
     }
 
-    QLabel::mouseMoveEvent(e);
+    //QLabel::mouseMoveEvent(e);
 }
 
 void img_region_selector::mouseReleaseEvent(QMouseEvent *e)
