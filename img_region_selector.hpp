@@ -1,11 +1,11 @@
 #ifndef IMG_REGION_SELECTOR_HPP
 #define IMG_REGION_SELECTOR_HPP
 
+#include "rubber_band.hpp"
+
 #include <QLabel>
 
 #include <vector>
-
-class QRubberBand;
 
 /*!
  *  \addtogroup qte
@@ -27,7 +27,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *e) override;
 
 private:
-    using rband_iter = std::vector<QRubberBand*>::reverse_iterator;
+    using rband_iter = std::vector<rubber_band*>::reverse_iterator;
 
     void change_cur_band_color(QColor const &color);
     void create_rubber_band(QPoint const &pos);
@@ -42,7 +42,7 @@ private:
     bool delete_key_press_; //delete rubber band
     bool move_rubber_band_;
     QPoint origin_;
-    std::vector<QRubberBand*> rubber_band_;
+    std::vector<rubber_band*> rubber_band_;
     QPoint rubber_band_offset_;
     //move rubber band or create new rubber band
     bool shift_key_press_;

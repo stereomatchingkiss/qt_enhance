@@ -48,7 +48,7 @@ void img_region_selector::keyReleaseEvent(QKeyEvent *e)
 img_region_selector::rband_iter
 img_region_selector::select_rubber_band(QPoint const &pos)
 {
-    auto func = [=](QRubberBand *b)
+    auto func = [=](rubber_band *b)
     {
         return b->geometry().contains(pos);
     };
@@ -94,7 +94,7 @@ void img_region_selector::set_resize_info()
 
 void img_region_selector::create_rubber_band(QPoint const &pos)
 {
-    auto *rb = new QRubberBand(QRubberBand::Rectangle, this);
+    auto *rb = new rubber_band(this);
     rb->setGeometry(QRect(pos, QSize()));
     auto *g_effect = new QGraphicsColorizeEffect(this);
     rb->setGraphicsEffect(g_effect);
@@ -137,8 +137,7 @@ void img_region_selector::mousePressEvent(QMouseEvent *e)
             }
         }else if(ctrl_key_press_){
             if(cur_rband != std::rend(rubber_band_)){
-                set_resize_info();
-                (*cur_rband)->setGeometry(QRect(origin_, QSize()));
+                (*cur_rband)->mousePressEvent(e);
             }
         }
     }
@@ -152,14 +151,16 @@ void img_region_selector::mouseMoveEvent(QMouseEvent *e)
         return;
     }
 
-    if(shift_key_press_){
-        if(move_rubber_band_){
-            (*cur_rband)->move(e->pos() - rubber_band_offset_);
-        }else{
-            rubber_band_.back()->setGeometry(QRect(origin_, e->pos()).normalized());
+    if(cur_rband != std::rend(rubber_band_)){
+        if(shift_key_press_){
+            if(move_rubber_band_){
+                (*cur_rband)->move(e->pos() - rubber_band_offset_);
+            }else{
+                (*cur_rband)->setGeometry(QRect(origin_, e->pos()).normalized());
+            }
+        }else if(ctrl_key_press_){
+            (*cur_rband)->mouseMoveEvent(e);
         }
-    }else if(ctrl_key_press_){
-
     }
 
     QLabel::mouseMoveEvent(e);
@@ -172,6 +173,7 @@ void img_region_selector::mouseReleaseEvent(QMouseEvent *e)
     }
 
     move_rubber_band_ = false;
+    (*cur_rband)->mouseReleaseEvent(e);
     change_cur_band_color(QColor("blue"));
     QLabel::mouseReleaseEvent(e);
 }
