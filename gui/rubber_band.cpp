@@ -50,19 +50,16 @@ void rubber_band::mousePressEvent(QMouseEvent *e)
             tweaking_part_ = tweak_part::right;
         }
 
-        auto const cursor = cursor_map_[static_cast<int>(tweaking_part_)];
-        setCursor(cursor);
-        emit cursor_changed(cursor);
-
-        //qDebug()<<"set "<<tweaking_part_<<" cursor";
-
         if(tweaking_part_ != tweak_part::none){
+            auto const cursor = cursor_map_[static_cast<int>(tweaking_part_)];
+            setCursor(cursor);
+            emit cursor_changed(cursor);
             return;
         }
     }
 
-    origin_ = pt ;
-    setGeometry(QRect(origin_, QSize()));
+    //setGeometry(geometry());
+    origin_ = pt;
     show();
 }
 
