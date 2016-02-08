@@ -20,6 +20,11 @@ public:
     explicit img_region_selector(QWidget *parent = nullptr);
 
     /**
+     * Remove all of the rubber band
+     */
+    void clear_rubber_band();
+
+    /**
      * This api will resize the rubber band if current
      * pixmap size do not equal to the old one
      * @param pix current pixmap

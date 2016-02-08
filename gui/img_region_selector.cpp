@@ -21,6 +21,14 @@ img_region_selector::img_region_selector(QWidget *parent) :
 {        
 }
 
+void img_region_selector::clear_rubber_band()
+{
+    for(auto *rb : rubber_band_){
+        delete rb;
+    }
+    rubber_band_.clear();
+}
+
 void img_region_selector::set_pixmap(const QPixmap &pix)
 {
     if(pixmap()){
