@@ -24,7 +24,7 @@ img_region_selector::img_region_selector(QWidget *parent) :
 void img_region_selector::clear_rubber_band()
 {
     for(auto *rb : rubber_band_){
-        delete rb;
+        rb->deleteLater();
     }
     rubber_band_.clear();
 }
@@ -44,8 +44,8 @@ void img_region_selector::set_pixmap(const QPixmap &pix)
                 if(width >= 50 && height >= 50){
                     (*it)->resize(width, height);
                     ++it;
-                }else{
-                    delete *it;
+                }else{                    
+                    (*it)->deleteLater();
                     it = rubber_band_.erase(it);
                 }
             }
