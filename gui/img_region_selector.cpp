@@ -2,6 +2,8 @@
 
 #include <QDebug>
 #include <QGraphicsEffect>
+#include <QGraphicsPixmapItem>
+#include <QGraphicsScene>
 #include <QMouseEvent>
 #include <QRubberBand>
 
@@ -10,7 +12,7 @@
 namespace qte{
 
 img_region_selector::img_region_selector(QWidget *parent) :
-    QLabel(parent),
+    QGraphicsView(parent),
     ctrl_key_press_{false},
     cur_rband{std::rend(rubber_band_)},
     delete_key_press_{false},
@@ -19,6 +21,11 @@ img_region_selector::img_region_selector(QWidget *parent) :
     rubber_band_offset_(0, 0),
     shift_key_press_{false}
 {        
+    graph_scene_  = new QGraphicsScene(this);
+    graph_pixmap_ = new QGraphicsPixmapItem;
+    graph_scene_->addItem(graph_pixmap_);
+
+    setScene(graph_scene_);
 }
 
 void img_region_selector::clear_rubber_band()
@@ -39,35 +46,42 @@ std::vector<QRect> img_region_selector::selected_regions() const
 
 void img_region_selector::selected_regions(std::vector<QRect> &inout) const
 {
-   inout.resize(rubber_band_.size());
-   for(size_t i = 0; i != rubber_band_.size(); ++i){
-       inout.emplace_back(rubber_band_[i]->rect());
-   }
+    inout.resize(rubber_band_.size());
+    for(size_t i = 0; i != rubber_band_.size(); ++i){
+        inout.emplace_back(map_to_pixmap_rect
+                           (rubber_band_[i]->geometry()));
+    }
+}
+
+void img_region_selector::scale_rubber_band(const QPixmap &pix)
+{
+    auto const pre_size = graph_pixmap_->pixmap().size();
+    auto const cur_size = pix.size();
+    if(pre_size != pix.size()){
+        for(auto it = std::begin(rubber_band_);
+            it != std::end(rubber_band_);){
+            float const width_ratio = cur_size.width() / static_cast<float>(pre_size.width());
+            float const height_ratio = cur_size.height() / static_cast<float>(pre_size.height());
+            int const width = static_cast<int>(pre_size.width() * width_ratio);
+            int const height = static_cast<int>(pre_size.height() * height_ratio);
+            if(width >= 50 && height >= 50){
+                (*it)->resize(width, height);
+                ++it;
+            }else{
+                (*it)->deleteLater();
+                it = rubber_band_.erase(it);
+            }
+        }
+    }
 }
 
 void img_region_selector::set_pixmap(const QPixmap &pix)
 {
-    if(pixmap()){
-        auto const pre_size = pixmap()->size();
-        auto const cur_size = pix.size();
-        if(pre_size != pix.size()){
-            for(auto it = std::begin(rubber_band_);
-                it != std::end(rubber_band_);){
-                float const width_ratio = cur_size.width() / static_cast<float>(pre_size.width());
-                float const height_ratio = cur_size.height() / static_cast<float>(pre_size.height());
-                int const width = static_cast<int>(pre_size.width() * width_ratio);
-                int const height = static_cast<int>(pre_size.height() * height_ratio);
-                if(width >= 50 && height >= 50){
-                    (*it)->resize(width, height);
-                    ++it;
-                }else{                    
-                    (*it)->deleteLater();
-                    it = rubber_band_.erase(it);
-                }
-            }
-        }
-        setPixmap(pix);
+    if(!graph_pixmap_->pixmap().isNull()){
+        scale_rubber_band(pix);
     }
+
+    graph_pixmap_->setPixmap(pix);
 }
 
 void img_region_selector::keyPressEvent(QKeyEvent *e)
@@ -80,7 +94,7 @@ void img_region_selector::keyPressEvent(QKeyEvent *e)
     }else if(e->key() == Qt::Key_Delete){
         delete_key_press_ = true;
     }else{
-        QLabel::keyPressEvent(e);
+        QGraphicsView::keyPressEvent(e);
     }
 }
 
@@ -125,16 +139,20 @@ bool img_region_selector::is_valid_ker_press() const
              delete_key_press_);
 }
 
+QRect img_region_selector::map_to_pixmap_rect(const QRect &rect) const
+{
+    auto const rf =
+            graph_pixmap_->mapFromScene(mapToScene(rect)).boundingRect();
+
+    return {rf.x(), rf.y(), rf.width(), rf.height()};
+}
+
 void img_region_selector::mousePressEvent(QMouseEvent *e)
 {
     //qDebug()<<"mouse press";
     if(!is_valid_ker_press()){
         return;
     }
-
-    qDebug()<<"no mapfrom : "<<e->pos();
-    qDebug()<<"mapfrom : "<<mapFrom((QWidget*)parent(), e->pos());
-    qDebug()<<"mapTo : "<<mapTo((QWidget*)parent(), e->pos());
 
     bool const click_left_mouse = e->button() == Qt::LeftButton;
     if(click_left_mouse){
@@ -170,7 +188,7 @@ void img_region_selector::mouseMoveEvent(QMouseEvent *e)
     //qDebug()<<__func__;
     if(!is_valid_ker_press()){
         return;
-    }    
+    }
 
     if(cur_rband != std::rend(rubber_band_)){
         if(shift_key_press_){

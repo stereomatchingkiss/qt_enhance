@@ -3,9 +3,13 @@
 
 #include "rubber_band.hpp"
 
+#include <QGraphicsView>
 #include <QLabel>
 
 #include <vector>
+
+class QGraphicsPixmapItem;
+class QGraphicsScene;
 
 /*!
  *  \addtogroup qte
@@ -13,7 +17,7 @@
  */
 namespace qte{
 
-class img_region_selector : public QLabel
+class img_region_selector : public QGraphicsView
 {
     Q_OBJECT
 public:
@@ -53,17 +57,22 @@ private:
 
     bool is_valid_ker_press() const;
 
+    QRect map_to_pixmap_rect(QRect const &rect) const;
+
+    void scale_rubber_band(const QPixmap &pix);
     rband_iter select_rubber_band(QPoint const &pos);
 
     bool ctrl_key_press_; //resize rubber band
     rband_iter cur_rband;
     bool delete_key_press_; //delete rubber band
+    QGraphicsPixmapItem *graph_pixmap_;
+    QGraphicsScene      *graph_scene_;
     bool move_rubber_band_;
     QPoint origin_;
     std::vector<rubber_band*> rubber_band_;
     QPoint rubber_band_offset_;
     //move rubber band or create new rubber band
-    bool shift_key_press_;  
+    bool shift_key_press_;      
 };
 
 } /*! @} End of Doxygen Groups*/
