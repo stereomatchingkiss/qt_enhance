@@ -24,6 +24,9 @@ public:
      */
     void clear_rubber_band();
 
+    std::vector<QRect> selected_regions() const;
+    void selected_regions(std::vector<QRect> &inout) const;
+
     /**
      * This api will resize the rubber band if current
      * pixmap size do not equal to the old one

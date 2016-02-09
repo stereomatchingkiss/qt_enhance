@@ -29,6 +29,22 @@ void img_region_selector::clear_rubber_band()
     rubber_band_.clear();
 }
 
+std::vector<QRect> img_region_selector::selected_regions() const
+{
+    std::vector<QRect> result;
+    selected_regions(result);
+
+    return result;
+}
+
+void img_region_selector::selected_regions(std::vector<QRect> &inout) const
+{
+   inout.resize(rubber_band_.size());
+   for(size_t i = 0; i != rubber_band_.size(); ++i){
+       inout.emplace_back(rubber_band_[i]->rect());
+   }
+}
+
 void img_region_selector::set_pixmap(const QPixmap &pix)
 {
     if(pixmap()){
@@ -116,6 +132,10 @@ void img_region_selector::mousePressEvent(QMouseEvent *e)
         return;
     }
 
+    qDebug()<<"no mapfrom : "<<e->pos();
+    qDebug()<<"mapfrom : "<<mapFrom((QWidget*)parent(), e->pos());
+    qDebug()<<"mapTo : "<<mapTo((QWidget*)parent(), e->pos());
+
     bool const click_left_mouse = e->button() == Qt::LeftButton;
     if(click_left_mouse){
         origin_ = e->pos();
@@ -150,7 +170,7 @@ void img_region_selector::mouseMoveEvent(QMouseEvent *e)
     //qDebug()<<__func__;
     if(!is_valid_ker_press()){
         return;
-    }
+    }    
 
     if(cur_rband != std::rend(rubber_band_)){
         if(shift_key_press_){
