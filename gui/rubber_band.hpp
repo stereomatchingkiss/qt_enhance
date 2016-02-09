@@ -17,6 +17,8 @@ class rubber_band : public QRubberBand
 public:
     explicit rubber_band(QWidget *parent = nullptr);
 
+    QRect scale_geometry(QPoint const &pt) const;
+
 public:
     void mousePressEvent(QMouseEvent * event) override;
     void mouseMoveEvent(QMouseEvent * event) override;

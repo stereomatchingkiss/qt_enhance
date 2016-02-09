@@ -31,6 +31,7 @@ public:
     std::vector<QRect> selected_regions() const;
     void selected_regions(std::vector<QRect> &inout) const;
 
+    void set_enable_focus(bool value);
     /**
      * This api will resize the rubber band if current
      * pixmap size do not equal to the old one
@@ -57,14 +58,19 @@ private:
 
     bool is_valid_ker_press() const;
 
+    QPoint map_to_pixmap_point(QPoint const &pt) const;
     QRect map_to_pixmap_rect(QRect const &rect) const;
 
     void scale_rubber_band(const QPixmap &pix);
     rband_iter select_rubber_band(QPoint const &pos);
 
+    bool within_pixmap(QPoint const &pt) const;
+    bool within_pixmap(QRect const &pt) const;
+
     bool ctrl_key_press_; //resize rubber band
     rband_iter cur_rband;
     bool delete_key_press_; //delete rubber band
+    bool enable_focus_;
     QGraphicsPixmapItem *graph_pixmap_;
     QGraphicsScene      *graph_scene_;
     bool move_rubber_band_;
@@ -72,7 +78,7 @@ private:
     std::vector<rubber_band*> rubber_band_;
     QPoint rubber_band_offset_;
     //move rubber band or create new rubber band
-    bool shift_key_press_;      
+    bool shift_key_press_;
 };
 
 } /*! @} End of Doxygen Groups*/

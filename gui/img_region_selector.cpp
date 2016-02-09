@@ -16,6 +16,7 @@ img_region_selector::img_region_selector(QWidget *parent) :
     ctrl_key_press_{false},
     cur_rband{std::rend(rubber_band_)},
     delete_key_press_{false},
+    enable_focus_{false},
     move_rubber_band_{false},
     origin_(0, 0),
     rubber_band_offset_(0, 0),
@@ -51,6 +52,11 @@ void img_region_selector::selected_regions(std::vector<QRect> &inout) const
         inout.emplace_back(map_to_pixmap_rect
                            (rubber_band_[i]->geometry()));
     }
+}
+
+void img_region_selector::set_enable_focus(bool value)
+{
+    enable_focus_ = value;
 }
 
 void img_region_selector::scale_rubber_band(const QPixmap &pix)
@@ -135,8 +141,20 @@ void img_region_selector::create_rubber_band(QPoint const &pos)
 
 bool img_region_selector::is_valid_ker_press() const
 {
+    if(!enable_focus_){
+        return false;
+    }
+
     return !(shift_key_press_ && ctrl_key_press_ &&
              delete_key_press_);
+}
+
+QPoint img_region_selector::
+map_to_pixmap_point(const QPoint &pt) const
+{
+    auto const ptf = graph_pixmap_->mapFromScene(mapToScene(pt));
+
+    return {ptf.x(), ptf.y()};
 }
 
 QRect img_region_selector::map_to_pixmap_rect(const QRect &rect) const
@@ -144,19 +162,42 @@ QRect img_region_selector::map_to_pixmap_rect(const QRect &rect) const
     auto const rf =
             graph_pixmap_->mapFromScene(mapToScene(rect)).boundingRect();
 
-    return {rf.x(), rf.y(), rf.width(), rf.height()};
+    return {rf.left(), rf.top(), rf.width(), rf.height()};
+}
+
+bool img_region_selector::within_pixmap(QPoint const &pt) const
+{
+    auto const ppt = map_to_pixmap_point(pt);
+    //qDebug()<<"click ppt : "<<ppt;
+    auto const psize = graph_pixmap_->pixmap().size();
+    if(ppt.x() < 0 || ppt.x() >= psize.width() ||
+            ppt.y() < 0 || ppt.y() >= psize.height()){
+        return false;
+    }
+
+    return true;
+}
+
+bool img_region_selector::within_pixmap(const QRect &pt) const
+{
+    return graph_pixmap_->pixmap().rect().
+            contains(map_to_pixmap_rect(pt));
 }
 
 void img_region_selector::mousePressEvent(QMouseEvent *e)
-{
-    //qDebug()<<"mouse press";
+{        
     if(!is_valid_ker_press()){
+        return;
+    }
+
+    origin_ = e->pos();
+    if(!within_pixmap(origin_)){
         return;
     }
 
     bool const click_left_mouse = e->button() == Qt::LeftButton;
     if(click_left_mouse){
-        origin_ = e->pos();
+
         cur_rband = select_rubber_band(origin_);
 
         if(shift_key_press_){
@@ -193,12 +234,23 @@ void img_region_selector::mouseMoveEvent(QMouseEvent *e)
     if(cur_rband != std::rend(rubber_band_)){
         if(shift_key_press_){
             if(move_rubber_band_){
-                (*cur_rband)->move(e->pos() - rubber_band_offset_);
+                auto const pt = e->pos() - rubber_band_offset_;
+                QRect const rect(pt, (*cur_rband)->size());
+                if(within_pixmap(rect)){
+                    (*cur_rband)->move(e->pos() - rubber_band_offset_);
+                }
             }else{
-                (*cur_rband)->setGeometry(QRect(origin_, e->pos()).normalized());
+                auto rect = QRect(origin_, e->pos());
+                rect.setWidth(std::max(50, rect.width()));
+                rect.setHeight(std::max(50, rect.height()));
+                if(within_pixmap(rect)){
+                    (*cur_rband)->setGeometry(rect);
+                }
             }
         }else if(ctrl_key_press_){
-            (*cur_rband)->mouseMoveEvent(e);
+            if(within_pixmap(e->pos())){
+                (*cur_rband)->mouseMoveEvent(e);
+            }
         }
     }
 

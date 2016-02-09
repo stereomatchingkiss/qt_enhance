@@ -21,6 +21,34 @@ rubber_band::rubber_band(QWidget *parent) :
     cursor_map_.emplace_back(Qt::SizeHorCursor);
 }
 
+QRect rubber_band::scale_geometry(const QPoint &pt) const
+{
+    if(tweaking_part_ != tweak_part::none){
+        QRect rg = geometry();
+        if(tweaking_part_ == tweak_part::top_left){
+            rg.setTopLeft(pt);
+        }else if(tweaking_part_ == tweak_part::top_right){
+            rg.setTopRight(pt);
+        }else if(tweaking_part_ == tweak_part::bottom_left){
+            rg.setBottomLeft(pt);
+        }else if(tweaking_part_ == tweak_part::bottom_right){
+            rg.setBottomRight(pt);
+        }else if(tweaking_part_ == tweak_part::top){
+            rg.setTop(pt.y());
+        }else if(tweaking_part_ == tweak_part::bottom){
+            rg.setBottom(pt.y());
+        }else if(tweaking_part_ == tweak_part::left){
+            rg.setLeft(pt.x());
+        }else if(tweaking_part_ == tweak_part::right){
+            rg.setRight(pt.x());
+        }
+
+        return rg;
+    }
+
+    return {-1,-1,-1,-1};
+}
+
 void rubber_band::mousePressEvent(QMouseEvent *e)
 {    
     QPoint const pt = e->pos();
@@ -64,32 +92,10 @@ void rubber_band::mousePressEvent(QMouseEvent *e)
 }
 
 void rubber_band::mouseMoveEvent(QMouseEvent *e)
-{
-    QPoint const pt = e->pos();
-    if(tweaking_part_ != tweak_part::none){
-        QRect rg = geometry();
-        if(tweaking_part_ == tweak_part::top_left){
-            rg.setTopLeft(pt);
-        }else if(tweaking_part_ == tweak_part::top_right){
-            rg.setTopRight(pt);
-        }else if(tweaking_part_ == tweak_part::bottom_left){
-            rg.setBottomLeft(pt);
-        }else if(tweaking_part_ == tweak_part::bottom_right){
-            rg.setBottomRight(pt);
-        }else if(tweaking_part_ == tweak_part::top){
-            rg.setTop(pt.y());
-        }else if(tweaking_part_ == tweak_part::bottom){
-            rg.setBottom(pt.y());
-        }else if(tweaking_part_ == tweak_part::left){
-            rg.setLeft(pt.x());
-        }else if(tweaking_part_ == tweak_part::right){
-            rg.setRight(pt.x());
-        }
-        if(rg.width() >= 50 && rg.height() >= 50){
-            setGeometry(rg);
-        }
-    }else{
-        setGeometry(QRect(origin_, pt).normalized());
+{    
+    auto const rg = scale_geometry(e->pos());
+    if(rg.width() >= 50 && rg.height() >= 50){
+        setGeometry(rg);
     }
 }
 
