@@ -10,6 +10,8 @@ TARGET = qt_enhance
 TEMPLATE = lib
 CONFIG += staticlib
 
+include(../pri/boost.pri)
+
 SOURCES += gui/img_region_selector.cpp \
     gui/rubber_band.cpp \
     network/download_info.cpp \
