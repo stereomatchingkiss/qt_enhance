@@ -46,7 +46,7 @@ bool create_file(QString const &save_at, QString const &save_as,
                  Index &index, Pair const &pair)
 {
     bool success = true;
-    index.modify(pair.first, [&](auto &v)
+    index.modify(pair.first, [&](download_info &v)
     {
         v.file_ = std::make_shared<QFile>(save_at + "/" + save_as);
         if(!v.file_->open(QIODevice::WriteOnly)){
@@ -191,7 +191,7 @@ void download_manager::download_finished()
                emit download_finished(it->uuid_, it->error_);
             }
             emit downloading_size_decrease(--total_download_files_);
-            net_index.modify(it, [](auto &v)
+            net_index.modify(it, [](download_info &v)
             {
                 v.reply_ = nullptr;
             });
@@ -245,7 +245,7 @@ void download_manager::error(QNetworkReply::NetworkError)
         auto &reply_set = download_info_.get<net_reply>();
         auto r_it = reply_set.find(reply);
         if(r_it != std::end(reply_set)){
-            reply_set.modify(r_it, [&](auto &v)
+            reply_set.modify(r_it, [&](download_info &v)
             {
                 v.error_ = reply->errorString();
             });
