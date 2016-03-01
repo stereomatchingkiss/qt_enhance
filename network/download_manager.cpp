@@ -80,6 +80,11 @@ append(QUrl const &url,
     return start_download_impl(url, save_at, save_as);
 }
 
+int_fast64_t download_manager::append(const QUrl &url)
+{
+    return start_download_impl(url, "", "");
+}
+
 bool download_manager::erase(int_fast64_t uuid)
 {
     auto &id_set = download_info_.get<uid>();
@@ -107,7 +112,7 @@ bool download_manager::start_download(int_fast64_t uuid)
         if(success){
             qDebug()<<__func__<<" can start download";
             auto pair = std::make_pair(id_it, true);
-            if(!id_it->save_as_.isEmpty()){
+            if(!id_it->save_as_.isEmpty() || !id_it->save_at_.isEmpty()){
                 if(create_dir(copy_it.save_at_, id_set, pair)){
                     if(create_file(copy_it.save_at_, copy_it.save_as_,
                                    id_set, pair)){
@@ -168,7 +173,7 @@ int_fast64_t download_manager::start_download_impl(QUrl const &url,
     auto pair = uid_index.insert(info);
     if(pair.second){
         if(reply){
-            if(!info.save_as_.isEmpty()){
+            if(!info.save_as_.isEmpty() || !info.save_at_.isEmpty()){
                 if(create_dir(save_at, uid_index, pair)){
                     if(create_file(save_at, save_as, uid_index, pair)){
                         connect_network_reply(reply);
@@ -237,7 +242,7 @@ void download_manager::download_ready_read()
         if(it != std::end(net_index)){
             QByteArray data(reply->bytesAvailable(), Qt::Uninitialized);
             reply->read(data.data(), data.size());
-            if(!it->save_as_.isEmpty()){
+            if(!it->save_as_.isEmpty() || !it->save_at_.isEmpty()){
                 it->file_->write(data);
             }else{
                 net_index.modify(it, [&](download_info &v)

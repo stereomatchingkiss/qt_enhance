@@ -44,7 +44,17 @@ public:
      */
     int_fast64_t append(QUrl const &url,
                         QString const &save_at,
-                        QString const &save_as);        
+                        QString const &save_as);
+
+    /**
+     * Overload of append(url, save_at, save_as), different part
+     * is it will save the download data into QByteArray but
+     * not file
+     * @param url url of the data want to download
+     * @return unique id for each download request, value >= 0
+     * indicate append operation success and vice versa
+     */
+    int_fast64_t append(QUrl const &url);
 
     /**
      * Erase the download item
@@ -95,7 +105,8 @@ signals:
     /**
      * emit when download finished
      * @param uuid unique id of the download request
-     * @param data data download from the url
+     * @param data data download from the url, only available if
+     * the save_at || save_as is empty
      * @param error error message of download, will be empty
      * if download operation has no error
      */
