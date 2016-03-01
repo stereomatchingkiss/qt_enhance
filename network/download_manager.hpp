@@ -15,7 +15,7 @@
 
 class QNetworkAccessManager;
 
-namespace dm{
+namespace qte{
 
 namespace net{
 
