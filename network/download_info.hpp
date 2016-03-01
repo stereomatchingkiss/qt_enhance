@@ -26,7 +26,7 @@ struct download_info
                   QString const &save_at,
                   QString const &save_as);
 
-    QString data_; //store the download data
+    QByteArray data_; //store the download data
     QString error_;
     //QFile is noncopyable, this is why
     //shared ptr is needed
