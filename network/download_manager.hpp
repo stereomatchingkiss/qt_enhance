@@ -80,7 +80,10 @@ public:
 
     /**
      * start the download in the download list, every
-     * download has it associated unique id
+     * download has it associated unique id. If the file already
+     * downloaded by append api, the uuid will not exist. The purpose
+     * of this api is redownload the file cannot download due to some
+     * errors.
      * @param uuid the unique id of the item want to download
      * @return true if the download can begin and vice versa
      */
@@ -96,10 +99,12 @@ signals:
     /**
      * emit when download finished
      * @param uuid unique id of the download request
+     * @param data data download from the url
      * @param error error message of download, will be empty
      * if download operation has no error
      */
-    void download_finished(int_fast64_t uuid, QString error);
+    void download_finished(int_fast64_t uuid, QString data,
+                           QString error);
     /**
      * emitted to indicate the progress of the download part of this
      * network request, if there's any. If there's no download
