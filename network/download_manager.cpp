@@ -107,12 +107,17 @@ bool download_manager::start_download(int_fast64_t uuid)
         if(success){
             qDebug()<<__func__<<" can start download";
             auto pair = std::make_pair(id_it, true);
-            if(create_dir(copy_it.save_at_, id_set, pair)){
-                if(create_file(copy_it.save_at_, copy_it.save_as_,
-                               id_set, pair)){
-                    connect_network_reply(id_it->reply_);
-                    return true;
+            if(!id_it->save_as_.isEmpty()){
+                if(create_dir(copy_it.save_at_, id_set, pair)){
+                    if(create_file(copy_it.save_at_, copy_it.save_as_,
+                                   id_set, pair)){
+                        connect_network_reply(id_it->reply_);
+                        return true;
+                    }
                 }
+            }else{
+                connect_network_reply(id_it->reply_);
+                return true;
             }
         }
     }
@@ -163,10 +168,14 @@ int_fast64_t download_manager::start_download_impl(QUrl const &url,
     auto pair = uid_index.insert(info);
     if(pair.second){
         if(reply){
-            if(create_dir(save_at, uid_index, pair)){
-                if(create_file(save_at, save_as, uid_index, pair)){
-                    connect_network_reply(reply);
+            if(!info.save_as_.isEmpty()){
+                if(create_dir(save_at, uid_index, pair)){
+                    if(create_file(save_at, save_as, uid_index, pair)){
+                        connect_network_reply(reply);
+                    }
                 }
+            }else{
+                connect_network_reply(reply);
             }
         }
     }else{
@@ -186,9 +195,9 @@ void download_manager::download_finished()
         auto it = net_index.find(reply);
         if(it != std::end(net_index)){
             if(reply->isFinished()){
-               emit download_finished(it->uuid_, tr("Abort"));
+                emit download_finished(it->uuid_, it->data_, tr("Abort"));
             }else{
-               emit download_finished(it->uuid_, it->error_);
+                emit download_finished(it->uuid_, it->data_, it->error_);
             }
             emit downloading_size_decrease(--total_download_files_);
             net_index.modify(it, [](download_info &v)
@@ -228,7 +237,14 @@ void download_manager::download_ready_read()
         if(it != std::end(net_index)){
             QByteArray data(reply->bytesAvailable(), Qt::Uninitialized);
             reply->read(data.data(), data.size());
-            it->file_->write(data);
+            if(!it->save_as_.isEmpty()){
+                it->file_->write(data);
+            }else{
+                net_index.modify(it, [&](download_info &v)
+                {
+                    v.data_ += data;
+                });
+            }
 
             emit download_ready_read(it->uuid_);
         }

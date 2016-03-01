@@ -9,10 +9,6 @@
 #include <QStringList>
 #include <QUrl>
 
-#include <map>
-#include <queue>
-#include <set>
-
 class QNetworkAccessManager;
 
 namespace qte{
@@ -48,7 +44,7 @@ public:
      */
     int_fast64_t append(QUrl const &url,
                         QString const &save_at,
-                        QString const &save_as);
+                        QString const &save_as);        
 
     /**
      * Erase the download item
@@ -103,7 +99,7 @@ signals:
      * @param error error message of download, will be empty
      * if download operation has no error
      */
-    void download_finished(int_fast64_t uuid, QString data,
+    void download_finished(int_fast64_t uuid, QByteArray data,
                            QString error);
     /**
      * emitted to indicate the progress of the download part of this
