@@ -36,6 +36,8 @@ bool create_dir(QString const &save_at, Index &index,
             index.erase(pair.first);
             return false;
         }
+    }else{
+        qDebug()<<"dir "<<save_at<<" exist";
     }
 
     return true;
@@ -50,7 +52,7 @@ bool create_file(QString const &save_at, QString const &save_as,
     {
         v.file_ = std::make_shared<QFile>(save_at + "/" + save_as);
         if(!v.file_->open(QIODevice::WriteOnly)){
-            qDebug()<<__func__<<" cannot open file";
+            qDebug()<<__func__<<" cannot open file "<<save_as;
             QMessageBox::warning(0, QObject::tr("Warning"),
                                  QObject::tr("Can not save download file"));
             success = false;
@@ -77,12 +79,12 @@ append(QUrl const &url,
        QString const &save_at,
        QString const &save_as)
 {
-    return start_download_impl(url, save_at, save_as);
+    return append_impl(url, save_at, save_as);
 }
 
 int_fast64_t download_manager::append(const QUrl &url)
 {
-    return start_download_impl(url, "", "");
+    return append_impl(url, "", "");
 }
 
 bool download_manager::erase(int_fast64_t uuid)
@@ -111,16 +113,20 @@ bool download_manager::start_download(int_fast64_t uuid)
         bool const success = id_set.replace(id_it, copy_it);
         if(success){
             qDebug()<<__func__<<" can start download";
-            auto pair = std::make_pair(id_it, true);
-            if(!id_it->save_as_.isEmpty() || !id_it->save_at_.isEmpty()){
+            if(!id_it->save_as_.isEmpty()){
+                qDebug()<<"save as is not empty";
+                auto pair = std::make_pair(id_it, true);
                 if(create_dir(copy_it.save_at_, id_set, pair)){
+                    qDebug()<<"can create dir";
                     if(create_file(copy_it.save_at_, copy_it.save_as_,
                                    id_set, pair)){
+                        qDebug()<<"can create file : "<<copy_it.save_as_;
                         connect_network_reply(id_it->reply_);
                         return true;
                     }
                 }
             }else{
+                qDebug()<<__func__<<", save as is empty";
                 connect_network_reply(id_it->reply_);
                 return true;
             }
@@ -158,13 +164,15 @@ void download_manager::connect_network_reply(QNetworkReply *reply)
     ++total_download_files_;
 }
 
-int_fast64_t download_manager::start_download_impl(QUrl const &url,
-                                                   QString const &save_at,
-                                                   QString const &save_as)
+int_fast64_t download_manager::append_impl(QUrl const &url,
+                                           QString const &save_at,
+                                           QString const &save_as)
 {             
-    QNetworkReply *reply = nullptr;    
+    QNetworkReply *reply = nullptr;
     auto &uid_index = download_info_.get<uid>();
     download_info info{uuid_, reply, save_at, save_as};
+    qDebug()<<__func__<<"save at == "<<save_at<<
+              ", save as == "<<save_as;
     info.url_ = url;
     auto pair = uid_index.insert(info);
     if(!pair.second){
@@ -184,7 +192,7 @@ void download_manager::download_finished()
         auto it = net_index.find(reply);
         if(it != std::end(net_index)){
             if(reply->isFinished()){
-                emit download_finished(it->uuid_, it->data_, tr("Abort"));
+                emit download_finished(it->uuid_, it->data_, tr("Finished"));
             }else{
                 emit download_finished(it->uuid_, it->data_, it->error_);
             }
@@ -226,9 +234,10 @@ void download_manager::download_ready_read()
         if(it != std::end(net_index)){
             QByteArray data(reply->bytesAvailable(), Qt::Uninitialized);
             reply->read(data.data(), data.size());
-            if(!it->save_as_.isEmpty() || !it->save_at_.isEmpty()){
+            if(it->file_.get() && it->file_->isOpen()){
                 it->file_->write(data);
             }else{
+                qDebug()<<it->save_as_<<" do not open";
                 net_index.modify(it, [&](download_info &v)
                 {
                     v.data_ += data;

@@ -146,9 +146,9 @@ private slots:
 private:
     void connect_network_reply(QNetworkReply *reply);    
 
-    int_fast64_t start_download_impl(QUrl const &value,
-                                     QString const &save_at,
-                                     QString const &save_as);
+    int_fast64_t append_impl(QUrl const &value,
+                             QString const &save_at,
+                             QString const &save_as);
 
     download_info_index download_info_;
     QNetworkAccessManager *manager_;
