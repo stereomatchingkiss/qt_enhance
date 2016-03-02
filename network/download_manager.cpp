@@ -161,29 +161,13 @@ void download_manager::connect_network_reply(QNetworkReply *reply)
 int_fast64_t download_manager::start_download_impl(QUrl const &url,
                                                    QString const &save_at,
                                                    QString const &save_as)
-{         
-    QNetworkRequest request(url);
-    QNetworkReply *reply = nullptr;
-    if(total_download_files_ < max_download_size_){
-        reply = manager_->get(request);
-    }
+{             
+    QNetworkReply *reply = nullptr;    
     auto &uid_index = download_info_.get<uid>();
     download_info info{uuid_, reply, save_at, save_as};
     info.url_ = url;
     auto pair = uid_index.insert(info);
-    if(pair.second){
-        if(reply){
-            if(!info.save_as_.isEmpty() || !info.save_at_.isEmpty()){
-                if(create_dir(save_at, uid_index, pair)){
-                    if(create_file(save_at, save_as, uid_index, pair)){
-                        connect_network_reply(reply);
-                    }
-                }
-            }else{
-                connect_network_reply(reply);
-            }
-        }
-    }else{
+    if(!pair.second){
         return -1;
     }
 

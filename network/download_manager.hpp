@@ -26,16 +26,12 @@ public:
     explicit download_manager(QObject *obj = nullptr);
 
     /**
-     * Append new data to the download list, if the
-     * data append to the downlad manager more than
-     * maximum download size, it would not start the
-     * download progress but save the information need
-     * to start the download, you should call the api
-     * "start_download" to start the appended download
-     * request but not call the append api again, because
-     * append api will add new download data into the download
-     * list rather than start the download progress of
-     * appended request
+     * Append new data to the download list, you should
+     * call the api "start_download" to start the
+     * appended download request but not call the append
+     * api again, because append api will add new download
+     * request into the download list rather than
+     * start the download progress of appended request
      * @param url url of the data want to download
      * @param save_at the location you want to save the file at
      * @param save_as the file name of the download target
