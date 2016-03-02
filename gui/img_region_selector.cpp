@@ -37,6 +37,11 @@ void img_region_selector::clear_rubber_band()
     rubber_band_.clear();
 }
 
+void img_region_selector::fit_in_view()
+{
+   fitInView(graph_scene_->itemsBoundingRect(), Qt::KeepAspectRatio);
+}
+
 std::vector<QRect> img_region_selector::selected_regions() const
 {
     std::vector<QRect> result;
@@ -268,9 +273,29 @@ void img_region_selector::mouseReleaseEvent(QMouseEvent *e)
     if(cur_rband != std::rend(rubber_band_)){
         (*cur_rband)->mouseReleaseEvent(e);
         change_cur_band_color(QColor("blue"));
+        qDebug()<<"release pos : "<<(*cur_rband)->pos();
         cur_rband = std::rend(rubber_band_);
     }
     //QLabel::mouseReleaseEvent(e);
+}
+
+void img_region_selector::resizeEvent(QResizeEvent *e)
+{
+    QGraphicsView::resizeEvent(e);
+
+    auto const old_size = e->oldSize();
+    auto const cur_size = e->size();
+    qDebug()<<"old size : "<<old_size;
+    qDebug()<<"cur size : "<<cur_size;
+    //qDebug()<<"resize pixmap pos : "<<mapFromScene(graph_pixmap_->mapToScene(0,0,0,0)).boundingRect();
+    auto const diff = cur_size - old_size;
+    qDebug()<<"diff : "<<diff;
+    //QPoint const offset(diff.width(), diff.height());
+    for(auto *rb : rubber_band_){
+        qDebug()<<"before move pos : "<<rb->pos();
+        //rb->move(rb->pos() + offset);
+        //qDebug()<<"after move pos : "<<rb->pos();
+    }
 }
 
 void img_region_selector::cursor_changed(Qt::CursorShape shape)

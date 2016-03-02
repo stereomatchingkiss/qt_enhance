@@ -28,6 +28,8 @@ public:
      */
     void clear_rubber_band();
 
+    void fit_in_view();
+
     std::vector<QRect> selected_regions() const;
     void selected_regions(std::vector<QRect> &inout) const;
 
@@ -44,13 +46,14 @@ protected:
     void keyReleaseEvent(QKeyEvent *e) override;
     void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
-    void mouseReleaseEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;    
+    void resizeEvent(QResizeEvent *e) override;
 
 private slots:
     void cursor_changed(Qt::CursorShape shape);
     void unset_cursor();
 
-private:
+private:    
     using rband_iter = std::vector<rubber_band*>::reverse_iterator;
 
     void change_cur_band_color(QColor const &color);
