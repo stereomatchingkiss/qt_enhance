@@ -83,6 +83,11 @@ int_fast64_t download_manager::append(const QUrl &url)
     return append_impl(url, "", "");
 }
 
+void download_manager::clear_download_list()
+{
+    download_info_.swap(download_info_index());
+}
+
 bool download_manager::erase(int_fast64_t uuid)
 {
     auto &id_set = download_info_.get<uid>();

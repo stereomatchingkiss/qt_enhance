@@ -53,6 +53,12 @@ public:
     int_fast64_t append(QUrl const &url);
 
     /**
+     * Clear all of the request wait to download
+     * or downloaded
+     */
+    void clear_download_list();
+
+    /**
      * Erase the download item
      * @param uuid the unique id of the item want to delete
      * @return true if the request can be erased and vice versa
