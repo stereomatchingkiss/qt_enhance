@@ -113,6 +113,7 @@ bool download_manager::start_download(int_fast64_t uuid)
             if(!can_create_dir || !can_create_file){
                 emit download_finished(id_it->uuid_, QByteArray(),
                                        tr("Cannot create file %1").arg(id_it->save_as_));
+                erase(id_it->uuid_);
                 return false;
             }
         }
@@ -193,11 +194,12 @@ void download_manager::download_finished()
                 emit download_finished(it->uuid_, it->data_, it->error_);
             }
             emit downloading_size_decrease(--total_download_files_);
-            //net_index.modify(it, [](download_info &v)
-            //{
-            //    v.reply_ = nullptr;
-            //});
-            net_index.erase(it);
+            //keep the item because the users may want to download it again
+            net_index.modify(it, [](download_info &v)
+            {
+                v.reply_ = nullptr;
+            });
+            //net_index.erase(it);
         }
     }else{
         qDebug()<<__func__<<" : do not exist";
