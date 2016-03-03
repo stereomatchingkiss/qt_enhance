@@ -31,8 +31,6 @@ bool create_dir(QString const &save_at, Index &index,
     QDir dir(save_at);
     if(!dir.exists()){
         if(!QDir().mkpath(save_at)){
-            QMessageBox::warning(0, QObject::tr("Warning"),
-                                 QObject::tr("Can not create directory"));
             index.erase(pair.first);
             return false;
         }
@@ -53,8 +51,6 @@ bool create_file(QString const &save_at, QString const &save_as,
         v.file_ = std::make_shared<QFile>(save_at + "/" + save_as);
         if(!v.file_->open(QIODevice::WriteOnly)){
             qDebug()<<__func__<<" cannot open file "<<save_as;
-            QMessageBox::warning(0, QObject::tr("Warning"),
-                                 QObject::tr("Can not save download file"));
             success = false;
         }
     });
@@ -106,6 +102,23 @@ bool download_manager::start_download(int_fast64_t uuid)
     auto id_it = id_set.find(uuid);
     if(id_it != std::end(id_set) && !id_it->reply_){
         qDebug()<<__func__<<" can find uuid";
+
+        auto pair = std::make_pair(id_it, true);
+        if(!id_it->save_at_.isEmpty()){
+            bool const can_create_dir =
+                    create_dir(id_it->save_at_, id_set, pair);
+            bool const can_create_file =
+                    create_file(id_it->save_at_, id_it->save_as_,
+                                id_set, pair);
+            if(!can_create_dir || !can_create_file){
+                emit download_finished(id_it->uuid_, QByteArray(),
+                                       tr("Cannot create file %1").arg(id_it->save_as_));
+                emit downloading_size_decrease(--total_download_files_);
+                erase(id_it->uuid_);
+                return false;
+            }
+        }
+
         auto copy_it = *id_it;
         copy_it.error_.clear();
         QNetworkRequest request(copy_it.url_);
@@ -113,23 +126,8 @@ bool download_manager::start_download(int_fast64_t uuid)
         bool const success = id_set.replace(id_it, copy_it);
         if(success){
             qDebug()<<__func__<<" can start download";
-            if(!id_it->save_as_.isEmpty()){
-                qDebug()<<"save as is not empty";
-                auto pair = std::make_pair(id_it, true);
-                if(create_dir(copy_it.save_at_, id_set, pair)){
-                    qDebug()<<"can create dir";
-                    if(create_file(copy_it.save_at_, copy_it.save_as_,
-                                   id_set, pair)){
-                        qDebug()<<"can create file : "<<copy_it.save_as_;
-                        connect_network_reply(id_it->reply_);
-                        return true;
-                    }
-                }
-            }else{
-                qDebug()<<__func__<<", save as is empty";
-                connect_network_reply(id_it->reply_);
-                return true;
-            }
+            connect_network_reply(id_it->reply_);
+            return true;
         }
     }
 
