@@ -215,6 +215,8 @@ void download_manager::download_finished()
             if(reply->isFinished()){
                 emit download_finished(it->uuid_, it->data_, tr("Finished"));
             }else{
+                QDir dir(it->save_at_);
+                dir.remove(it->save_as_);
                 emit download_finished(it->uuid_, it->data_, it->error_);
             }
             emit downloading_size_decrease(--total_download_files_);
