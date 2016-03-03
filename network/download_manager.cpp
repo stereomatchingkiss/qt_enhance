@@ -106,7 +106,7 @@ bool download_manager::start_download(int_fast64_t uuid)
     auto &id_set = download_info_.get<uid>();
     auto id_it = id_set.find(uuid);
     if(id_it != std::end(id_set) && !id_it->reply_){
-        qDebug()<<__func__<<" can find uuid";
+        qDebug()<<__func__<<" can find uuid "<<uuid;
 
         auto pair = std::make_pair(id_it, true);
         if(!id_it->save_at_.isEmpty()){
@@ -125,13 +125,18 @@ bool download_manager::start_download(int_fast64_t uuid)
 
         auto copy_it = *id_it;
         copy_it.error_.clear();
+        qDebug()<<__func__<<" : "<<copy_it.url_;
         QNetworkRequest request(copy_it.url_);
         copy_it.reply_ = manager_->get(request);
-        bool const success = id_set.replace(id_it, copy_it);
-        if(success){
-            qDebug()<<__func__<<" can start download";
-            connect_network_reply(id_it->reply_);
-            return true;
+        if(copy_it.reply_){
+            bool const success = id_set.replace(id_it, copy_it);
+            if(success){
+                qDebug()<<__func__<<" can start download";
+                connect_network_reply(id_it->reply_);
+                return true;
+            }
+        }else{
+            qDebug()<<__func__<<" can not start download";
         }
     }
 
@@ -155,12 +160,16 @@ void download_manager::set_max_download_size(size_t value)
 
 void download_manager::connect_network_reply(QNetworkReply *reply)
 {
+    qDebug()<<__func__<<" download progress";
     connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
             this, SLOT(download_progress(qint64,qint64)));
+    qDebug()<<__func__<<" finished";
     connect(reply, SIGNAL(finished()),
             this, SLOT(download_finished()));
+    qDebug()<<__func__<<" readyRead";
     connect(reply, SIGNAL(readyRead()),
             this, SLOT(download_ready_read()));
+    qDebug()<<__func__<<" error";
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
             this, SLOT(error(QNetworkReply::NetworkError)));
     ++total_download_files_;
@@ -173,9 +182,11 @@ int_fast64_t download_manager::append_impl(QUrl const &url,
     QNetworkReply *reply = nullptr;
     auto &uid_index = download_info_.get<uid>();
     download_info info{uuid_, reply, save_at, save_as};
-    qDebug()<<__func__<<"save at == "<<save_at<<
+    qDebug()<<__func__<<" save at == "<<save_at<<
               ", save as == "<<save_as;
+    qDebug()<<__func__<<"uuid == "<<uuid_;
     info.url_ = url;
+    qDebug()<<__func__<<"url == "<<info.url_;
     auto pair = uid_index.insert(info);
     if(!pair.second){
         return -1;
@@ -193,12 +204,6 @@ void download_manager::download_finished()
         auto &net_index = download_info_.get<net_reply>();
         auto it = net_index.find(reply);
         if(it != std::end(net_index)){
-            if(reply->isFinished()){
-                emit download_finished(it->uuid_, it->data_, tr("Finished"));
-            }else{
-                emit download_finished(it->uuid_, it->data_, it->error_);
-            }
-            emit downloading_size_decrease(--total_download_files_);
             //keep the item because the users may want to download it again
             net_index.modify(it, [](download_info &v)
             {
@@ -207,6 +212,12 @@ void download_manager::download_finished()
                     v.file_->close();
                 }
             });
+            if(reply->isFinished()){
+                emit download_finished(it->uuid_, it->data_, tr("Finished"));
+            }else{
+                emit download_finished(it->uuid_, it->data_, it->error_);
+            }
+            emit downloading_size_decrease(--total_download_files_);
             //net_index.erase(it);
         }
     }else{
