@@ -113,8 +113,6 @@ bool download_manager::start_download(int_fast64_t uuid)
             if(!can_create_dir || !can_create_file){
                 emit download_finished(id_it->uuid_, QByteArray(),
                                        tr("Cannot create file %1").arg(id_it->save_as_));
-                emit downloading_size_decrease(--total_download_files_);
-                erase(id_it->uuid_);
                 return false;
             }
         }
