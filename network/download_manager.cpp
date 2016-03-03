@@ -198,6 +198,9 @@ void download_manager::download_finished()
             net_index.modify(it, [](download_info &v)
             {
                 v.reply_ = nullptr;
+                if(v.file_.get() && v.file_->isOpen()){
+                    v.file_->close();
+                }
             });
             //net_index.erase(it);
         }
