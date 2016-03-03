@@ -195,10 +195,11 @@ void download_manager::download_finished()
                 emit download_finished(it->uuid_, it->data_, it->error_);
             }
             emit downloading_size_decrease(--total_download_files_);
-            net_index.modify(it, [](download_info &v)
-            {
-                v.reply_ = nullptr;
-            });
+            //net_index.modify(it, [](download_info &v)
+            //{
+            //    v.reply_ = nullptr;
+            //});
+            net_index.erase(it);
         }
     }else{
         qDebug()<<__func__<<" : do not exist";
