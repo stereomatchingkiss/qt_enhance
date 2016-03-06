@@ -80,6 +80,13 @@ public:
     size_t get_total_download_file() const;
 
     /**
+     * restart the download request
+     * @param uuid unique id of the request
+     * @return true if able to restart, else false
+     */
+    bool restart_download(int_fast64_t uuid);
+
+    /**
      * Set maximum download size, this value determine how
      * many items could be downloaded at the same time
      * @param value value of maximum download size
@@ -150,7 +157,7 @@ private slots:
     void error(QNetworkReply::NetworkError code);
 
 private:
-    void connect_network_reply(QNetworkReply *reply);    
+    void connect_network_reply(QNetworkReply *reply);
 
     int_fast64_t append_impl(QUrl const &value,
                              QString const &save_at,

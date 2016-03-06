@@ -153,6 +153,37 @@ size_t download_manager::get_total_download_file() const
     return total_download_files_;
 }
 
+bool download_manager::restart_download(int_fast64_t uuid)
+{
+    auto &id_set = download_info_.get<uid>();
+    auto id_it = id_set.find(uuid);
+
+    if(id_it != std::end(id_set)){
+        auto &net_set = download_info_.get<net_reply>();
+        auto net_it = net_set.find(id_it->reply_);
+        auto func = [=](download_info &v)->bool
+        {
+            disconnect(v.reply_, SIGNAL(finished()),
+                       this, SLOT(download_finished()));
+            v.reply_->abort();
+            recycle rcy(v.reply_);
+
+            QNetworkRequest request(v.url_);
+            v.reply_ = manager_->get(request);
+            if(v.reply_){
+                qDebug()<<"restart download id : "<<v.uuid_;
+                connect_network_reply(v.reply_);
+                return start_download(v.uuid_);
+            }else{
+                return false;
+            }
+        };
+        return net_set.modify(net_it, func);
+    }
+
+    return false;
+}
+
 void download_manager::set_max_download_size(size_t value)
 {
     max_download_size_ = value;
@@ -160,18 +191,18 @@ void download_manager::set_max_download_size(size_t value)
 
 void download_manager::connect_network_reply(QNetworkReply *reply)
 {
+    qDebug()<<__func__<<" error";
+    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
+            this, SLOT(error(QNetworkReply::NetworkError)));
+    qDebug()<<__func__<<" readyRead";
+    connect(reply, SIGNAL(readyRead()),
+            this, SLOT(download_ready_read()));
     qDebug()<<__func__<<" download progress";
     connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
             this, SLOT(download_progress(qint64,qint64)));
     qDebug()<<__func__<<" finished";
     connect(reply, SIGNAL(finished()),
             this, SLOT(download_finished()));
-    qDebug()<<__func__<<" readyRead";
-    connect(reply, SIGNAL(readyRead()),
-            this, SLOT(download_ready_read()));
-    qDebug()<<__func__<<" error";
-    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SLOT(error(QNetworkReply::NetworkError)));
     ++total_download_files_;
 }
 
