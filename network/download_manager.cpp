@@ -163,8 +163,7 @@ bool download_manager::restart_download(int_fast64_t uuid)
         auto net_it = net_set.find(id_it->reply_);
         auto func = [=](download_info &v)->bool
         {
-            disconnect(v.reply_, SIGNAL(finished()),
-                       this, SLOT(download_finished()));
+            connect_network_reply(v.reply_, false);
             v.reply_->abort();
             recycle rcy(v.reply_);
 
@@ -195,21 +194,30 @@ void download_manager::set_max_download_size(size_t value)
     max_download_size_ = value;
 }
 
-void download_manager::connect_network_reply(QNetworkReply *reply)
+void download_manager::
+connect_network_reply(QNetworkReply *reply,
+                      bool is_connect)
 {
-    qDebug()<<__func__<<" error";
-    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SLOT(error(QNetworkReply::NetworkError)));
-    qDebug()<<__func__<<" readyRead";
-    connect(reply, SIGNAL(readyRead()),
-            this, SLOT(download_ready_read()));
-    qDebug()<<__func__<<" download progress";
-    connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
-            this, SLOT(download_progress(qint64,qint64)));
-    qDebug()<<__func__<<" finished";
-    connect(reply, SIGNAL(finished()),
-            this, SLOT(download_finished()));
-    ++total_download_files_;
+    if(is_connect){
+        connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
+                this, SLOT(error(QNetworkReply::NetworkError)));
+        connect(reply, SIGNAL(readyRead()),
+                this, SLOT(download_ready_read()));
+        connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+                this, SLOT(download_progress(qint64,qint64)));
+        connect(reply, SIGNAL(finished()),
+                this, SLOT(download_finished()));
+        ++total_download_files_;
+    }else{
+        disconnect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
+                   this, SLOT(error(QNetworkReply::NetworkError)));
+        disconnect(reply, SIGNAL(readyRead()),
+                   this, SLOT(download_ready_read()));
+        disconnect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+                   this, SLOT(download_progress(qint64,qint64)));
+        disconnect(reply, SIGNAL(finished()),
+                   this, SLOT(download_finished()));
+    }
 }
 
 int_fast64_t download_manager::append_impl(QUrl const &url,

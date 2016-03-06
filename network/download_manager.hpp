@@ -157,7 +157,8 @@ private slots:
     void error(QNetworkReply::NetworkError code);
 
 private:
-    void connect_network_reply(QNetworkReply *reply);
+    void connect_network_reply(QNetworkReply *reply,
+                               bool is_connect = true);
 
     int_fast64_t append_impl(QUrl const &value,
                              QString const &save_at,
