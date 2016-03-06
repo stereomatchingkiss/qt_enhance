@@ -249,7 +249,7 @@ void download_manager::download_finished()
                     v.file_->close();
                 }
             });
-            if(reply->isFinished()){
+            if(reply->isFinished() && it->error_.isEmpty()){
                 emit download_finished(it->uuid_, it->data_, tr("Finished"));
             }else{
                 QDir dir(it->save_at_);
