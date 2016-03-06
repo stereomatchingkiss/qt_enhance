@@ -171,6 +171,11 @@ bool download_manager::restart_download(int_fast64_t uuid)
             QNetworkRequest request(v.url_);
             v.reply_ = manager_->get(request);
             if(v.reply_){
+                v.data_.clear();
+                if(v.file_.get() && v.file_->isOpen()){
+                    v.file_->close();
+                    v.file_->open(QIODevice::WriteOnly);
+                }
                 qDebug()<<"restart download id : "<<v.uuid_;
                 connect_network_reply(v.reply_);
                 return start_download(v.uuid_);
