@@ -177,6 +177,7 @@ bool download_manager::restart_download(int_fast64_t uuid)
                     v.file_->open(QIODevice::WriteOnly);
                 }
                 qDebug()<<"restart download id : "<<v.uuid_;
+                --total_download_files_;
                 connect_network_reply(v.reply_);
                 return start_download(v.uuid_);
             }else{
