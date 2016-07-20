@@ -22,6 +22,8 @@ bool compress(QString const &file_name, QString const &compress_file_name)
     QByteArray uncompressed_data = infile.readAll();
     QByteArray compressed_data = qCompress(uncompressed_data, 9);
     outfile.write(compressed_data);
+
+    return true;
 }
 
 bool decompress(QString const &file_name, QString const &decompress_file_name)
@@ -39,6 +41,8 @@ bool decompress(QString const &file_name, QString const &decompress_file_name)
     QByteArray uncompressed_data = infile.readAll();
     QByteArray compressed_data = qUncompress(uncompressed_data);
     outfile.write(compressed_data);
+
+    return true;
 }
 
 }}	
