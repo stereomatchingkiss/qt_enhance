@@ -1,8 +1,9 @@
 #ifndef FOLDERCOMPRESSOR_H
 #define FOLDERCOMPRESSOR_H
 
-#include <QFile>
+#include <QDataStream>
 #include <QDir>
+#include <QFile>
 
 namespace qte{
 
