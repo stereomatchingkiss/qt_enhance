@@ -8,8 +8,8 @@ namespace qte{
 
 namespace cp{
 
-void compress(QString const &file_name, QString const &compress_file_name);
-void decompress(QString const &file_name, QString const &decompress_file_name);
+bool compress(QString const &file_name, QString const &compress_file_name);
+bool decompress(QString const &file_name, QString const &decompress_file_name);
 	
 }
 }	
