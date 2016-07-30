@@ -20,7 +20,8 @@ public:
     //A recursive function that scans all files inside the source folder
     //and serializes all files in a row of file names and compressed
     //binary data in a single file
-    bool compress_folder(QString const &sourceFolder, QString const &destinationFile);
+    bool compress_folder(QString const &sourceFolder, QString const &destinationFile,
+                         int compression_level = 9);
 
     //A function that deserializes data from the compressed file and
     //creates any needed subfolders before saving the file
@@ -30,7 +31,8 @@ private:
     QFile file;
     QDataStream dataStream;
 
-    bool compress(QString const &sourceFolder, QString const &prefex);
+    bool compress(QString const &sourceFolder, QString const &prefex,
+                  int compression_level);
 };
 
 }}

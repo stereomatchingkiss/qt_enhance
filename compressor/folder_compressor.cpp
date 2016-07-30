@@ -9,7 +9,8 @@ folder_compressor::folder_compressor()
 }
 
 bool folder_compressor::compress_folder(QString const &sourceFolder,
-                                        QString const &destinationFile)
+                                        QString const &destinationFile,
+                                        int compression_level)
 {
     QDir src(sourceFolder);
     if(!src.exists())//folder not found
@@ -25,14 +26,15 @@ bool folder_compressor::compress_folder(QString const &sourceFolder,
 
     dataStream.setDevice(&file);
 
-    bool success = compress(sourceFolder, "");
+    bool success = compress(sourceFolder, "", compression_level);
     file.close();
 
     return success;
 }
 
 bool folder_compressor::compress(QString const &sourceFolder,
-                                 QString const &prefex)
+                                 QString const &prefex,
+                                 int compression_level)
 {
     QDir dir(sourceFolder);
     if(!dir.exists())
@@ -49,7 +51,7 @@ bool folder_compressor::compress(QString const &sourceFolder,
         QString folderPath = dir.absolutePath()+"/"+folderName;
         QString newPrefex = prefex+"/"+folderName;
 
-        compress(folderPath, newPrefex);
+        compress(folderPath, newPrefex, compression_level);
     }
 
     //3 - List all files inside the current folder
@@ -66,7 +68,7 @@ bool folder_compressor::compress(QString const &sourceFolder,
         }
 
         dataStream << QString(prefex+"/"+filesList.at(i).fileName());
-        dataStream << qCompress(file.readAll());
+        dataStream << qCompress(file.readAll(), compression_level);
 
         file.close();
     }

@@ -7,7 +7,8 @@ namespace qte{
 
 namespace cp{
 
-bool compress(QString const &file_name, QString const &compress_file_name)
+bool compress(QString const &file_name, QString const &compress_file_name,
+               int compression_level)
 {    
     QFile infile(file_name);
     QFile outfile(compress_file_name);
@@ -20,7 +21,7 @@ bool compress(QString const &file_name, QString const &compress_file_name)
         return false;
     }
     QByteArray uncompressed_data = infile.readAll();
-    QByteArray compressed_data = qCompress(uncompressed_data, 9);
+    QByteArray compressed_data = qCompress(uncompressed_data, compression_level);
     outfile.write(compressed_data);
 
     return true;
