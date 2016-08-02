@@ -4,7 +4,6 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QMessageBox>
 #include <QNetworkAccessManager>
 
 namespace qte{

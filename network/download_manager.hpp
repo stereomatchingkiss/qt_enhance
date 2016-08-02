@@ -4,7 +4,6 @@
 #include "download_info.hpp"
 
 #include <QObject>
-#include <QMessageBox>
 #include <QNetworkReply>
 #include <QStringList>
 #include <QUrl>
