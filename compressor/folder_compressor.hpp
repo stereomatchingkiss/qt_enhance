@@ -22,6 +22,9 @@ public:
     //binary data in a single file
     bool compress_folder(QString const &sourceFolder, QString const &destinationFile,
                          int compression_level = 9);
+    bool compress_folder(QString const &sourceFolder, QString const &destinationFile,
+                         QStringList const &exclude_content,
+                         int compression_level = 9);
 
     //A function that deserializes data from the compressed file and
     //creates any needed subfolders before saving the file
@@ -32,6 +35,9 @@ private:
     QDataStream dataStream;
 
     bool compress(QString const &sourceFolder, QString const &prefex,
+                  int compression_level);
+    bool compress(QString const &sourceFolder, QString const &prefex,
+                  QStringList const &exclude_content,
                   int compression_level);
 };
 

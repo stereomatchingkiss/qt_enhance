@@ -1,5 +1,7 @@
 #include "folder_compressor.hpp"
 
+#include <set>
+
 namespace qte{
 
 namespace cp{
@@ -10,6 +12,14 @@ folder_compressor::folder_compressor()
 
 bool folder_compressor::compress_folder(QString const &sourceFolder,
                                         QString const &destinationFile,
+                                        int compression_level)
+{
+    return compress_folder(sourceFolder, destinationFile, {}, compression_level);
+}
+
+bool folder_compressor::compress_folder(const QString &sourceFolder,
+                                        const QString &destinationFile,
+                                        const QStringList &exclude_content,
                                         int compression_level)
 {
     QDir src(sourceFolder);
@@ -26,7 +36,7 @@ bool folder_compressor::compress_folder(QString const &sourceFolder,
 
     dataStream.setDevice(&file);
 
-    bool success = compress(sourceFolder, "", compression_level);
+    bool success = compress(sourceFolder, "", exclude_content, compression_level);
     file.close();
 
     return success;
@@ -34,6 +44,14 @@ bool folder_compressor::compress_folder(QString const &sourceFolder,
 
 bool folder_compressor::compress(QString const &sourceFolder,
                                  QString const &prefex,
+                                 int compression_level)
+{
+    return compress(sourceFolder, prefex, {}, compression_level);
+}
+
+bool folder_compressor::compress(const QString &sourceFolder,
+                                 const QString &prefex,
+                                 const QStringList &exclude_content,
                                  int compression_level)
 {
     QDir dir(sourceFolder);
@@ -44,14 +62,17 @@ bool folder_compressor::compress(QString const &sourceFolder,
     dir.setFilter(QDir::NoDotAndDotDot | QDir::Dirs);
     QFileInfoList foldersList = dir.entryInfoList();
 
+    std::set<QString> exclude_set(std::begin(exclude_content),
+                                  std::end(exclude_content));
     //2 - For each folder in list: call the same function with folders' paths
-    for(int i=0; i<foldersList.length(); i++)
+    for(int i = 0; i < foldersList.length(); ++i)
     {
-        QString folderName = foldersList.at(i).fileName();
-        QString folderPath = dir.absolutePath()+"/"+folderName;
-        QString newPrefex = prefex+"/"+folderName;
-
-        compress(folderPath, newPrefex, compression_level);
+        QString const folderName = foldersList.at(i).fileName();
+        if(exclude_set.find(folderName) == std::end(exclude_set)){
+            QString const folderPath = dir.absolutePath() + "/" + folderName;
+            QString const newPrefex = prefex + "/" + folderName;
+            compress(folderPath, newPrefex, compression_level);
+        }
     }
 
     //3 - List all files inside the current folder
