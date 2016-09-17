@@ -84,7 +84,7 @@ int_fast64_t download_manager::append(const QUrl &url)
 
 void download_manager::clear_download_list()
 {
-    download_info_.swap(download_info_index());
+    download_info_.clear();
 }
 
 bool download_manager::erase(int_fast64_t uuid)
