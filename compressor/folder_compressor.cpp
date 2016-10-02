@@ -36,10 +36,7 @@ bool folder_compressor::compress_folder(const QString &sourceFolder,
 
     dataStream.setDevice(&file);
 
-    bool success = compress(sourceFolder, "", exclude_content, compression_level);
-    file.close();
-
-    return success;
+    return compress(sourceFolder, "", exclude_content, compression_level);
 }
 
 bool folder_compressor::compress(QString const &sourceFolder,
@@ -89,9 +86,7 @@ bool folder_compressor::compress(const QString &sourceFolder,
         }
 
         dataStream << QString(prefex+"/"+filesList.at(i).fileName());
-        dataStream << qCompress(file.readAll(), compression_level);
-
-        file.close();
+        dataStream << qCompress(file.readAll(), compression_level);        
     }
 
     return true;
@@ -140,15 +135,13 @@ bool folder_compressor::decompress_folder(QString const &sourceFile,
 
         QFile outFile(destinationFolder+"/"+fileName);
         if(!outFile.open(QIODevice::WriteOnly))
-        {
-            file.close();
+        {            
             return false;
         }
         outFile.write(qUncompress(data));
         outFile.close();
     }
 
-    file.close();
     return true;
 }
 
