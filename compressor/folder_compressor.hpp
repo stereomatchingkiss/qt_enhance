@@ -30,15 +30,15 @@ public:
     //creates any needed subfolders before saving the file
     bool decompress_folder(QString const &sourceFile, QString const &destinationFolder);
 
-private:
-    QFile file;
-    QDataStream dataStream;
-
+private:    
     bool compress(QString const &sourceFolder, QString const &prefex,
                   int compression_level);
     bool compress(QString const &sourceFolder, QString const &prefex,
                   QStringList const &exclude_content,
                   int compression_level);
+
+    QDataStream data_stream_;
+    QFile file_;
 };
 
 }}

@@ -28,15 +28,18 @@ bool folder_compressor::compress_folder(const QString &sourceFolder,
         return false;
     }
 
-    file.setFileName(destinationFile);
-    if(!file.open(QIODevice::WriteOnly))//could not open file
+    file_.setFileName(destinationFile);
+    if(!file_.open(QIODevice::WriteOnly))//could not open file
     {
         return false;
     }
 
-    dataStream.setDevice(&file);
+    data_stream_.setDevice(&file_);
 
-    return compress(sourceFolder, "", exclude_content, compression_level);
+    bool success = compress(sourceFolder, "", exclude_content, compression_level);
+    file_.close();
+
+    return success;
 }
 
 bool folder_compressor::compress(QString const &sourceFolder,
@@ -85,8 +88,8 @@ bool folder_compressor::compress(const QString &sourceFolder,
             return false;
         }
 
-        dataStream << QString(prefex+"/"+filesList.at(i).fileName());
-        dataStream << qCompress(file.readAll(), compression_level);        
+        data_stream_ << QString(prefex+"/"+filesList.at(i).fileName());
+        data_stream_ << qCompress(file.readAll(), compression_level);
     }
 
     return true;
@@ -107,19 +110,19 @@ bool folder_compressor::decompress_folder(QString const &sourceFile,
         return false;
     }
 
-    file.setFileName(sourceFile);
-    if(!file.open(QIODevice::ReadOnly))
+    file_.setFileName(sourceFile);
+    if(!file_.open(QIODevice::ReadOnly))
         return false;
 
-    dataStream.setDevice(&file);
+    data_stream_.setDevice(&file_);
 
-    while(!dataStream.atEnd())
+    while(!data_stream_.atEnd())
     {
         QString fileName;
         QByteArray data;
 
         //extract file name and data in order
-        dataStream >> fileName >> data;
+        data_stream_ >> fileName >> data;
 
         //create any needed folder
         QString subfolder;
@@ -135,13 +138,15 @@ bool folder_compressor::decompress_folder(QString const &sourceFile,
 
         QFile outFile(destinationFolder+"/"+fileName);
         if(!outFile.open(QIODevice::WriteOnly))
-        {            
+        {
+            file_.close();
             return false;
         }
         outFile.write(qUncompress(data));
         outFile.close();
     }
 
+    file_.close();
     return true;
 }
 
