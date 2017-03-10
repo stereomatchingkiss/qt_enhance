@@ -86,6 +86,13 @@ public:
     bool restart_download(int_fast64_t uuid);
 
     /**
+     * Restart(new) QNetworkAccessManger because Qt5 got some bugs--
+     * Once network error occur, it may not be able to download anything
+     * @return
+     */
+    bool restart_network_manager();
+
+    /**
      * Set maximum download size, this value determine how
      * many items could be downloaded at the same time
      * @param value value of maximum download size

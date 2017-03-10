@@ -188,6 +188,12 @@ bool download_manager::restart_download(int_fast64_t uuid)
     return false;
 }
 
+bool download_manager::restart_network_manager()
+{
+    manager_->deleteLater();
+    manager_ = new QNetworkAccessManager(this);
+}
+
 void download_manager::set_max_download_size(size_t value)
 {
     max_download_size_ = value;
