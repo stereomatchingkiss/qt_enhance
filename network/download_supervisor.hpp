@@ -62,6 +62,7 @@ private slots:
     void ready_read();
 
 private:
+    void launch_download_task(std::shared_ptr<download_task> &task);
     void download_start(std::shared_ptr<download_task> &task);
     QString save_file_name(download_task const &task) const;
 

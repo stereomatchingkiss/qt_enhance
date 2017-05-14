@@ -50,7 +50,7 @@ void download_supervisor::process_download_finished()
     if(reply){
         auto rit = reply_table_.find(reply);
         if(rit != std::end(reply_table_)){
-            auto const unique_id = rit->second->unique_id_;            
+            auto const unique_id = rit->second->unique_id_;
             reply_table_.erase(rit);
             auto id_it = id_table_.find(unique_id);
             if(id_it != std::end(id_table_)){
@@ -63,7 +63,7 @@ void download_supervisor::process_download_finished()
             }
         }
         if(reply->error() != QNetworkReply::NoError){
-          qDebug()<<"download error:"<<reply->errorString();
+            qDebug()<<"download error:"<<reply->errorString();
         }
     }else{
         qDebug()<<__func__<<":QNetworkReply is nullptr";
@@ -115,21 +115,30 @@ void download_supervisor::ready_read()
     }
 }
 
+void download_supervisor::launch_download_task(std::shared_ptr<download_supervisor::download_task> &task)
+{
+    ++total_download_file_;
+    task->network_reply_ = network_access_->get(QNetworkRequest(task->url_));
+    reply_table_.insert({task->network_reply_, task});
+    connect(task->network_reply_, SIGNAL(error(QNetworkReply::NetworkError)),
+            this, SLOT(error_handle(QNetworkReply::NetworkError)));
+    connect(task->network_reply_, &QNetworkReply::readyRead, this, &download_supervisor::ready_read);
+    connect(task->network_reply_, SIGNAL(finished()), this, SLOT(process_download_finished()));
+    connect(task->network_reply_, &QNetworkReply::downloadProgress, this, &download_supervisor::handle_download_progress);
+}
+
 void download_supervisor::download_start(std::shared_ptr<download_task> &task)
 {
     if(total_download_file_ < max_download_file_){
-        task->file_.setFileName(save_file_name(*task));
-        if(task->file_.open(QIODevice::WriteOnly)){
-            ++total_download_file_;
-            task->network_reply_ = network_access_->get(QNetworkRequest(task->url_));
-            reply_table_.insert({task->network_reply_, task});
-            connect(task->network_reply_, SIGNAL(error(QNetworkReply::NetworkError)),
-                    this, SLOT(error_handle(QNetworkReply::NetworkError)));
-            connect(task->network_reply_, &QNetworkReply::readyRead, this, &download_supervisor::ready_read);
-            connect(task->network_reply_, SIGNAL(finished()), this, SLOT(process_download_finished()));
-            connect(task->network_reply_, &QNetworkReply::downloadProgress, this, &download_supervisor::handle_download_progress);
+        if(task->save_as_file_){
+            task->file_.setFileName(save_file_name(*task));
+            if(task->file_.open(QIODevice::WriteOnly)){
+                launch_download_task(task);
+            }else{
+                emit error(task->unique_id_, tr("Cannot open file"));
+            }
         }else{
-            emit error(task->unique_id_, tr("Cannot open file"));
+            launch_download_task(task);
         }
     }
 }
