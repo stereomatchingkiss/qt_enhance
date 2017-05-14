@@ -151,7 +151,7 @@ void download_supervisor::download_start(std::shared_ptr<download_task> &task)
             if(task->file_.open(QIODevice::WriteOnly)){
                 launch_download_task(task);
             }else{
-                task->file_can_open_ = true;
+                task->file_can_open_ = false;
                 emit error(task->unique_id_, tr("Cannot open file"));
             }
         }else{
