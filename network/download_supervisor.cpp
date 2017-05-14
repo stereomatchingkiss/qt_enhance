@@ -14,15 +14,14 @@ download_supervisor::download_supervisor(QObject *parent)
       network_access_(new QNetworkAccessManager(this)),
       total_download_file_(0),
       unique_id_(0)
-{
-
+{     
 }
 
-size_t download_supervisor::append(const QUrl &url, const QString &save_at, bool save_as_file)
+size_t download_supervisor::append(const QNetworkRequest &request, const QString &save_at, bool save_as_file)
 {
     auto task = std::make_shared<download_task>();
     task->unique_id_ = unique_id_++;
-    task->url_ = url;
+    task->network_request_ = request;
     task->save_at_ = save_at;
     task->save_as_file_ = save_as_file;
     id_table_.insert({task->unique_id_, task});
@@ -136,7 +135,7 @@ void download_supervisor::ready_read()
 void download_supervisor::launch_download_task(std::shared_ptr<download_supervisor::download_task> &task)
 {
     ++total_download_file_;
-    task->network_reply_ = network_access_->get(QNetworkRequest(task->url_));
+    task->network_reply_ = network_access_->get(task->network_request_);
     reply_table_.insert({task->network_reply_, task});
     connect(task->network_reply_, static_cast<void(QNetworkReply::*)(QNetworkReply::NetworkError)>(&QNetworkReply::error),
             this, &download_supervisor::error_handle);
@@ -166,7 +165,7 @@ void download_supervisor::download_start(std::shared_ptr<download_task> &task)
 
 QString download_supervisor::save_file_name(const download_supervisor::download_task &task) const
 {
-    QFileInfo file_info(task.url_.path());
+    QFileInfo file_info(task.get_url().path());
     QString file_name = file_info.fileName();
     if(QFile::exists(task.save_at_ + "/" + file_name)){
         QString const base_name = file_info.baseName();
@@ -192,7 +191,7 @@ size_t download_supervisor::download_task::get_unique_id() const
 
 QUrl download_supervisor::download_task::get_url() const
 {
-    return url_;
+    return network_request_.url();
 }
 
 } //namespace net

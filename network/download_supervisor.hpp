@@ -37,6 +37,7 @@ public:
         bool file_can_open_ = true;
         QNetworkReply::NetworkError network_error_code_ = QNetworkReply::NoError;
         QNetworkReply *network_reply_ = nullptr;
+        QNetworkRequest network_request_;
         QString save_at_;
         bool save_as_file_ = true;
         size_t unique_id_ = 0;
@@ -45,7 +46,7 @@ public:
 
     explicit download_supervisor(QObject *parent = nullptr);
 
-    size_t append(QUrl const &url, QString const &save_at, bool save_as_file = true);
+    size_t append(QNetworkRequest const &url, QString const &save_at, bool save_as_file = true);
 
     size_t get_max_download_file() const;
 
