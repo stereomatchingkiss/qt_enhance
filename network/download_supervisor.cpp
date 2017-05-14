@@ -138,10 +138,11 @@ void download_supervisor::launch_download_task(std::shared_ptr<download_supervis
     ++total_download_file_;
     task->network_reply_ = network_access_->get(QNetworkRequest(task->url_));
     reply_table_.insert({task->network_reply_, task});
-    connect(task->network_reply_, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SLOT(error_handle(QNetworkReply::NetworkError)));
+    connect(task->network_reply_, static_cast<void(QNetworkReply::*)(QNetworkReply::NetworkError)>(&QNetworkReply::error),
+            this, &download_supervisor::error_handle);
     connect(task->network_reply_, &QNetworkReply::readyRead, this, &download_supervisor::ready_read);
-    connect(task->network_reply_, SIGNAL(finished()), this, SLOT(process_download_finished()));
+    connect(task->network_reply_, static_cast<void(QNetworkReply::*)()>(&QNetworkReply::finished),
+            this, &download_supervisor::process_download_finished);
     connect(task->network_reply_, &QNetworkReply::downloadProgress, this, &download_supervisor::handle_download_progress);
 }
 
