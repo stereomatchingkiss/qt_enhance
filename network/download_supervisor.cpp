@@ -41,6 +41,24 @@ void download_supervisor::set_max_download_file(size_t val)
     max_download_file_ = val;
 }
 
+void download_supervisor::start_next_download()
+{
+    //TODO : use hint to speed things up
+    if(!id_table_.empty()){
+        auto it = std::begin(id_table_);
+        for(; it != std::end(id_table_); ++it){
+            if(it->second->network_error_code_ == QNetworkReply::NoError &&
+                    it->second->file_can_open_){
+                download_start(it->second);
+                break;
+            }
+        }
+        if(it == std::end(id_table_)){
+            //TODO : emit signal to tell the slot every download are done
+        }
+    }
+}
+
 void download_supervisor::process_download_finished()
 {
     if(total_download_file_ > 0){
@@ -51,16 +69,14 @@ void download_supervisor::process_download_finished()
         auto rit = reply_table_.find(reply);
         if(rit != std::end(reply_table_)){
             auto const unique_id = rit->second->unique_id_;
+            auto const download_data = rit->second->data_;
             reply_table_.erase(rit);
             auto id_it = id_table_.find(unique_id);
             if(id_it != std::end(id_table_)){
                 id_table_.erase(id_it);
             }
-            emit download_finished(unique_id, rit->second->data_);
-            if(!id_table_.empty()){
-                auto it = id_table_.begin();
-                download_start(it->second);
-            }
+            emit download_finished(unique_id, download_data);
+            start_next_download();
         }
         if(reply->error() != QNetworkReply::NoError){
             qDebug()<<"download error:"<<reply->errorString();
@@ -99,7 +115,6 @@ void download_supervisor::ready_read()
 {
     auto *reply = qobject_cast<QNetworkReply*>(sender());
     if(reply){
-        //qDebug()<<__func__<<" ready read";
         auto it = reply_table_.find(reply);
         if(it != std::end(reply_table_)){
             QByteArray data(reply->bytesAvailable(), Qt::Uninitialized);
@@ -131,10 +146,12 @@ void download_supervisor::download_start(std::shared_ptr<download_task> &task)
 {
     if(total_download_file_ < max_download_file_){
         if(task->save_as_file_){
-            task->file_.setFileName(save_file_name(*task));
+            qDebug()<<task->save_at_ + "/" + save_file_name(*task);
+            task->file_.setFileName(task->save_at_ + "/" + save_file_name(*task));
             if(task->file_.open(QIODevice::WriteOnly)){
                 launch_download_task(task);
             }else{
+                task->file_can_open_ = true;
                 emit error(task->unique_id_, tr("Cannot open file"));
             }
         }else{

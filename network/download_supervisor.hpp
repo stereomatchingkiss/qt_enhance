@@ -32,8 +32,10 @@ public:
         QUrl get_url() const;
 
     private:
-        QByteArray data_;
+        QByteArray data_;        
         QFile file_;
+        bool file_can_open_ = true;
+        QNetworkReply::NetworkError network_error_code_ = QNetworkReply::NoError;
         QNetworkReply *network_reply_ = nullptr;
         QString save_at_;
         bool save_as_file_ = true;
@@ -61,17 +63,18 @@ private slots:
     void handle_download_progress(qint64 bytesReceived, qint64 bytesTotal);
     void ready_read();
 
-private:
-    void launch_download_task(std::shared_ptr<download_task> &task);
+private:    
     void download_start(std::shared_ptr<download_task> &task);
+    void launch_download_task(std::shared_ptr<download_task> &task);
     QString save_file_name(download_task const &task) const;
+    void start_next_download();
 
     std::map<size_t, std::shared_ptr<download_task>> id_table_;
     size_t max_download_file_;
     QNetworkAccessManager *network_access_;
     std::map<QNetworkReply*, std::shared_ptr<download_task>> reply_table_;
     size_t total_download_file_;
-    size_t unique_id_;
+    size_t unique_id_;    
 };
 
 } //namespace net
