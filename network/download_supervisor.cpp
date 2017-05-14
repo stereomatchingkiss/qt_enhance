@@ -41,7 +41,7 @@ void download_supervisor::set_max_download_file(size_t val)
     max_download_file_ = val;
 }
 
-void download_supervisor::download_finished()
+void download_supervisor::process_download_finished()
 {
     if(total_download_file_ > 0){
         --total_download_file_;

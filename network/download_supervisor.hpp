@@ -56,7 +56,7 @@ signals:
     void error(size_t unique_id, QString const &error_msg);
 
 private slots:
-    void download_finished();
+    void process_download_finished();
     void error_handle(QNetworkReply::NetworkError code);
     void handle_download_progress(qint64 bytesReceived, qint64 bytesTotal);
     void ready_read();
