@@ -52,8 +52,7 @@ void download_supervisor::start_next_download()
                 break;
             }
         }
-        if(it == std::end(id_table_)){
-            //TODO : emit signal to tell the slot every download are done
+        if(it == std::end(id_table_)){            
             emit all_download_finished();
         }
     }else{
@@ -83,6 +82,7 @@ void download_supervisor::process_download_finished()
         if(reply->error() != QNetworkReply::NoError){
             qDebug()<<"download error:"<<reply->errorString();
         }
+        reply->deleteLater();
     }else{
         qDebug()<<__func__<<":QNetworkReply is nullptr";
     }
