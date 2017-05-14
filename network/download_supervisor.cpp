@@ -55,7 +55,10 @@ void download_supervisor::start_next_download()
         }
         if(it == std::end(id_table_)){
             //TODO : emit signal to tell the slot every download are done
+            emit all_download_finished();
         }
+    }else{
+        emit all_download_finished();
     }
 }
 
