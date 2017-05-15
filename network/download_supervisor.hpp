@@ -1,5 +1,5 @@
-#ifndef DOWNLOAD_SUPERVISOR_HPP
-#define DOWNLOAD_SUPERVISOR_HPP
+#ifndef QTE_NET_DOWNLOAD_SUPERVISOR_HPP
+#define QTE_NET_DOWNLOAD_SUPERVISOR_HPP
 
 #include <QFile>
 #include <QNetworkReply>
@@ -98,4 +98,4 @@ private:
 
 } //namespace qte
 
-#endif // DOWNLOAD_MANAGER_HPP
+#endif // QTE_NET_DOWNLOAD_SUPERVISOR_HPP
