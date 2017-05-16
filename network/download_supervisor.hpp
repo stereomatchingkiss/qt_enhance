@@ -48,6 +48,8 @@ public:
       */
     void set_max_download_file(size_t val);
 
+    void set_proxy(QNetworkProxy const &proxy);
+
 signals:
     void all_download_finished();
     void download_finished(size_t unique_id, QByteArray data);
