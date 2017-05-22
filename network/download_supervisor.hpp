@@ -52,7 +52,7 @@ public:
 
 signals:
     void all_download_finished();
-    void download_finished(size_t unique_id, QNetworkReply::NetworkError code, QByteArray data);
+    void download_finished(size_t unique_id, QNetworkReply::NetworkError code, QByteArray data, QString const &save_as);
     void download_progress(size_t unique_id, qint64 bytesReceived, qint64 bytesTotal);
 
     void error(size_t unique_id, QString const &error_msg);

@@ -78,11 +78,11 @@ void download_supervisor::process_download_finished()
             auto const unique_id = rit->second->unique_id_;
             auto const download_data = rit->second->data_;
             reply_table_.erase(rit);
-            auto id_it = id_table_.find(unique_id);
+            auto id_it = id_table_.find(unique_id);            
+            emit download_finished(unique_id, reply->error(), download_data, id_it->second->file_.fileName());
             if(id_it != std::end(id_table_)){
                 id_table_.erase(id_it);
             }
-            emit download_finished(unique_id, reply->error(), download_data);
             start_next_download();
         }
         if(reply->error() != QNetworkReply::NoError){
