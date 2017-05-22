@@ -76,7 +76,7 @@ void download_supervisor::process_download_finished()
             if(id_it != std::end(id_table_)){
                 id_table_.erase(id_it);
             }
-            emit download_finished(unique_id, download_data);
+            emit download_finished(unique_id, reply->error(), download_data);
             start_next_download();
         }
         if(reply->error() != QNetworkReply::NoError){
