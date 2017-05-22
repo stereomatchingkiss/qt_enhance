@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QNetworkAccessManager>
+#include <QNetworkProxy>
 
 namespace qte{
 
@@ -38,6 +39,11 @@ size_t download_supervisor::get_max_download_file() const
 void download_supervisor::set_max_download_file(size_t val)
 {
     max_download_file_ = val;
+}
+
+void download_supervisor::set_proxy(const QNetworkProxy &proxy)
+{
+    network_access_->setProxy(proxy);
 }
 
 void download_supervisor::start_next_download()

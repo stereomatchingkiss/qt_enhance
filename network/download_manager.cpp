@@ -192,6 +192,8 @@ bool download_manager::restart_network_manager()
 {
     manager_->deleteLater();
     manager_ = new QNetworkAccessManager(this);
+
+    return true;
 }
 
 void download_manager::set_max_download_size(size_t value)
