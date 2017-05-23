@@ -74,20 +74,20 @@ void download_supervisor::process_download_finished()
     auto *reply = qobject_cast<QNetworkReply*>(sender());
     if(reply){
         auto rit = reply_table_.find(reply);
+        if(reply->error() != QNetworkReply::NoError){
+            qDebug()<<"download error:"<<reply->errorString();
+            rit->second->network_error_code_ = reply->error();
+        }
         if(rit != std::end(reply_table_)){
-            auto const unique_id = rit->second->unique_id_;
-            auto const download_data = rit->second->data_;
+            auto const unique_id = rit->second->unique_id_;            
             reply_table_.erase(rit);
             auto id_it = id_table_.find(unique_id);            
-            emit download_finished(unique_id, reply->error(), download_data, id_it->second->file_.fileName());
+            emit download_finished(id_it->second);
             if(id_it != std::end(id_table_)){
                 id_table_.erase(id_it);
             }
             start_next_download();
-        }
-        if(reply->error() != QNetworkReply::NoError){
-            qDebug()<<"download error:"<<reply->errorString();
-        }
+        }        
         reply->deleteLater();
     }else{
         qDebug()<<__func__<<":QNetworkReply is nullptr";
@@ -188,6 +188,21 @@ QString download_supervisor::save_file_name(const download_supervisor::download_
     }
 
     return file_name;
+}
+
+QNetworkReply::NetworkError download_supervisor::download_task::get_network_error_code() const
+{
+    return network_error_code_;
+}
+
+QString const& download_supervisor::download_task::get_save_at() const
+{
+    return save_at_;
+}
+
+QString download_supervisor::download_task::get_save_as() const
+{
+    return file_.fileName();
 }
 
 size_t download_supervisor::download_task::get_unique_id() const

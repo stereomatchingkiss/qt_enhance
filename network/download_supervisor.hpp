@@ -24,6 +24,28 @@ class download_supervisor : public QObject
 {
     Q_OBJECT
 public:
+    struct download_task
+    {
+        friend class download_supervisor;
+
+        QNetworkReply::NetworkError get_network_error_code() const;
+        QString const& get_save_at() const;
+        QString get_save_as() const;
+        size_t get_unique_id() const;
+        QUrl get_url() const;
+
+    private:
+        QByteArray data_;
+        QFile file_;
+        bool file_can_open_ = true;
+        QNetworkReply::NetworkError network_error_code_ = QNetworkReply::NoError;
+        QNetworkReply *network_reply_ = nullptr;
+        QNetworkRequest network_request_;
+        QString save_at_;
+        bool save_as_file_ = true;
+        size_t unique_id_ = 0;
+    };
+
     explicit download_supervisor(QObject *parent = nullptr);
 
     /**
@@ -52,7 +74,7 @@ public:
 
 signals:
     void all_download_finished();
-    void download_finished(size_t unique_id, QNetworkReply::NetworkError code, QByteArray data, QString const &save_as);
+    void download_finished(std::shared_ptr<download_task> task);
     void download_progress(size_t unique_id, qint64 bytesReceived, qint64 bytesTotal);
 
     void error(size_t unique_id, QString const &error_msg);
@@ -63,26 +85,7 @@ private slots:
     void handle_download_progress(qint64 bytesReceived, qint64 bytesTotal);
     void ready_read();
 
-private:    
-    struct download_task
-    {
-        friend class download_supervisor;
-
-        size_t get_unique_id() const;
-        QUrl get_url() const;
-
-    private:
-        QByteArray data_;
-        QFile file_;
-        bool file_can_open_ = true;
-        QNetworkReply::NetworkError network_error_code_ = QNetworkReply::NoError;
-        QNetworkReply *network_reply_ = nullptr;
-        QNetworkRequest network_request_;
-        QString save_at_;
-        bool save_as_file_ = true;
-        size_t unique_id_ = 0;
-    };
-
+private:
     void download_start(std::shared_ptr<download_task> &task);
     void launch_download_task(std::shared_ptr<download_task> &task);
     QString save_file_name(download_task const &task) const;
