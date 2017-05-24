@@ -101,7 +101,7 @@ void download_supervisor::error_handle(QNetworkReply::NetworkError)
     if(reply){
         auto it = reply_table_.find(reply);
         if(it != std::end(reply_table_)){
-            emit error(it->second->unique_id_, reply->errorString());
+            emit error(it->second, reply->errorString());
         }
     }
 }
@@ -162,7 +162,7 @@ void download_supervisor::download_start(std::shared_ptr<download_task> &task)
                 launch_download_task(task);
             }else{
                 task->file_can_open_ = false;
-                emit error(task->unique_id_, tr("Cannot open file"));
+                emit error(task, tr("Cannot open file %1").arg(task->file_.fileName()));
             }
         }else{
             launch_download_task(task);
