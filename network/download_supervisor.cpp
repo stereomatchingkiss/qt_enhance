@@ -73,16 +73,17 @@ void download_supervisor::process_download_finished()
     }
     auto *reply = qobject_cast<QNetworkReply*>(sender());
     if(reply){
-        auto rit = reply_table_.find(reply);
-        if(reply->error() != QNetworkReply::NoError){
-            qDebug()<<"download error:"<<reply->errorString();
-            rit->second->network_error_code_ = reply->error();
-        }
+        auto rit = reply_table_.find(reply);        
         if(rit != std::end(reply_table_)){
-            auto const unique_id = rit->second->unique_id_;            
+            auto task = rit->second;
+            if(reply->error() != QNetworkReply::NoError){
+                task->network_error_code_ = reply->error();
+            }
+            auto const unique_id = task->unique_id_;
+            task->file_.close();
             reply_table_.erase(rit);
-            auto id_it = id_table_.find(unique_id);            
-            emit download_finished(id_it->second);
+            auto id_it = id_table_.find(unique_id);
+            emit download_finished(task);
             if(id_it != std::end(id_table_)){
                 id_table_.erase(id_it);
             }
