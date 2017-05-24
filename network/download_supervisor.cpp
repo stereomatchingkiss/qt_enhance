@@ -113,7 +113,7 @@ void download_supervisor::handle_download_progress(qint64 bytesReceived, qint64 
     if(reply){
         auto rit = reply_table_.find(reply);
         if(rit != std::end(reply_table_)){
-            emit download_progress(rit->second->unique_id_, bytesReceived,
+            emit download_progress(rit->second, bytesReceived,
                                    bytesTotal);
         }
     }

@@ -75,7 +75,7 @@ public:
 signals:
     void all_download_finished();
     void download_finished(std::shared_ptr<download_task> task);
-    void download_progress(size_t unique_id, qint64 bytesReceived, qint64 bytesTotal);
+    void download_progress(std::shared_ptr<download_task> task, qint64 bytesReceived, qint64 bytesTotal);
 
     void error(size_t unique_id, QString const &error_msg);
 
