@@ -85,11 +85,11 @@ void download_supervisor::process_download_finished()
             auto const unique_id = task->unique_id_;
             task->file_.close();
             reply_table_.erase(rit);
-            auto id_it = id_table_.find(unique_id);
-            emit download_finished(task);
+            auto id_it = id_table_.find(unique_id);            
             if(id_it != std::end(id_table_)){
                 id_table_.erase(id_it);
             }
+            emit download_finished(task);
             start_next_download();
         }
         reply->deleteLater();
