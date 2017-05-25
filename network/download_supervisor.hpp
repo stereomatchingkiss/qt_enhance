@@ -28,6 +28,7 @@ public:
     {
         friend class download_supervisor;
 
+        QString const& get_error_string() const;
         QNetworkReply::NetworkError get_network_error_code() const;
         QString const& get_save_at() const;
         QString get_save_as() const;
@@ -36,6 +37,7 @@ public:
 
     private:
         QByteArray data_;
+        QString error_string_;
         QFile file_;
         bool file_can_open_ = true;
         QNetworkReply::NetworkError network_error_code_ = QNetworkReply::NoError;

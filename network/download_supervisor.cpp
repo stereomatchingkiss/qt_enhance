@@ -78,6 +78,7 @@ void download_supervisor::process_download_finished()
             auto task = rit->second;
             if(reply->error() != QNetworkReply::NoError){
                 task->network_error_code_ = reply->error();
+                task->error_string_ = reply->errorString();
             }
             auto const unique_id = task->unique_id_;
             task->file_.close();
@@ -91,7 +92,7 @@ void download_supervisor::process_download_finished()
         }        
         reply->deleteLater();
     }else{
-        qDebug()<<__func__<<":QNetworkReply is nullptr";
+        qDebug()<<__func__<<":QNetworkReply is nullptr";        
     }
 }
 
@@ -101,6 +102,7 @@ void download_supervisor::error_handle(QNetworkReply::NetworkError)
     if(reply){
         auto it = reply_table_.find(reply);
         if(it != std::end(reply_table_)){
+            it->second->error_string_ = reply->errorString();
             emit error(it->second, reply->errorString());
         }
     }
@@ -162,7 +164,8 @@ void download_supervisor::download_start(std::shared_ptr<download_task> &task)
                 launch_download_task(task);
             }else{
                 task->file_can_open_ = false;
-                emit error(task, tr("Cannot open file %1").arg(task->file_.fileName()));
+                task->error_string_ = tr("Cannot open file %1").arg(task->file_.fileName());
+                emit error(task, task->error_string_);
             }
         }else{
             launch_download_task(task);
@@ -189,6 +192,11 @@ QString download_supervisor::save_file_name(const download_supervisor::download_
     }
 
     return file_name;
+}
+
+const QString &download_supervisor::download_task::get_error_string() const
+{
+    return error_string_;
 }
 
 QNetworkReply::NetworkError download_supervisor::download_task::get_network_error_code() const
