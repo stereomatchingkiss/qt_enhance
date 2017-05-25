@@ -189,18 +189,18 @@ void download_supervisor::download_start(std::shared_ptr<download_task> task)
 QString download_supervisor::save_file_name(const download_supervisor::download_task &task) const
 {
     QFileInfo file_info(task.get_url().toString());
-    QString file_name = file_info.fileName();
+    QRegularExpression const re("[<>:\"/\\*\\?\\|\\\\]");
+    QString file_name = file_info.fileName().remove(re);
     if(QFile::exists(task.save_at_ + "/" + file_name)){
         QString const base_name = file_info.baseName();
         QString complete_suffix = file_info.completeSuffix();
         if(complete_suffix.isEmpty()){
             complete_suffix = "txt";
         }
-        QString new_file_name = base_name + "(0)." + complete_suffix;
-        new_file_name.remove(QRegularExpression("[<>:\"/\\\\\\|\\?\\*]"));
+        QString new_file_name = base_name + "(0)." + complete_suffix;        
         for(size_t i = 1; QFile::exists(task.save_at_ + "/" + new_file_name); ++i){
             new_file_name = base_name + "(" + QString::number(i) + ")." + complete_suffix;
-        }
+        }        
 
         return new_file_name;
     }
