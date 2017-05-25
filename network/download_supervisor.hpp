@@ -51,7 +51,8 @@ public:
     explicit download_supervisor(QObject *parent = nullptr);
 
     /**
-      * Append new data to the download list and begin to download
+      * Append new data to the download list, this would start download task,
+      * call start_download_task to start download
       * @param request url of the data want to download
       * @param save_at the location you want to save the file at
       * @param save_as the file name of the download target
@@ -74,6 +75,12 @@ public:
 
     void set_proxy(QNetworkProxy const &proxy);
 
+    /**
+     * @brief start to download if unique id exist in task list
+     * @param unique_id self explained
+     */
+    void start_download_task(size_t unique_id);
+
 signals:
     void all_download_finished();
     void download_finished(std::shared_ptr<download_task> task);
@@ -88,8 +95,8 @@ private slots:
     void ready_read();
 
 private:
-    void download_start(std::shared_ptr<download_task> &task);
-    void launch_download_task(std::shared_ptr<download_task> &task);
+    void download_start(std::shared_ptr<download_task> task);
+    void launch_download_task(std::shared_ptr<download_task> task);
     QString save_file_name(download_task const &task) const;
     void start_next_download();
 

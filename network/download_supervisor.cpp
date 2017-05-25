@@ -4,6 +4,9 @@
 #include <QFileInfo>
 #include <QNetworkAccessManager>
 #include <QNetworkProxy>
+#include <QRegularExpression>
+
+#include <functional>
 
 namespace qte{
 
@@ -25,8 +28,7 @@ size_t download_supervisor::append(const QNetworkRequest &request, const QString
     task->network_request_ = request;
     task->save_at_ = save_at;
     task->save_as_file_ = save_as_file;
-    id_table_.insert({task->unique_id_, task});
-    download_start(task);
+    id_table_.insert({task->unique_id_, task});    
 
     return task->unique_id_;
 }
@@ -44,6 +46,14 @@ void download_supervisor::set_max_download_file(size_t val)
 void download_supervisor::set_proxy(const QNetworkProxy &proxy)
 {
     network_access_->setProxy(proxy);
+}
+
+void download_supervisor::start_download_task(size_t unique_id)
+{
+    auto it = id_table_.find(unique_id);
+    if(it != std::end(id_table_)){
+        download_start(it->second);
+    }
 }
 
 void download_supervisor::start_next_download()
@@ -143,7 +153,7 @@ void download_supervisor::ready_read()
     }
 }
 
-void download_supervisor::launch_download_task(std::shared_ptr<download_supervisor::download_task> &task)
+void download_supervisor::launch_download_task(std::shared_ptr<download_supervisor::download_task> task)
 {
     ++total_download_file_;
     task->network_reply_ = network_access_->get(task->network_request_);
@@ -156,7 +166,7 @@ void download_supervisor::launch_download_task(std::shared_ptr<download_supervis
     connect(task->network_reply_, &QNetworkReply::downloadProgress, this, &download_supervisor::handle_download_progress);
 }
 
-void download_supervisor::download_start(std::shared_ptr<download_task> &task)
+void download_supervisor::download_start(std::shared_ptr<download_task> task)
 {
     if(total_download_file_ < max_download_file_){
         if(task->save_as_file_){
@@ -164,7 +174,7 @@ void download_supervisor::download_start(std::shared_ptr<download_task> &task)
             task->file_.setFileName(task->save_at_ + "/" + save_file_name(*task));
             if(task->file_.open(QIODevice::WriteOnly)){
                 launch_download_task(task);
-            }else{
+            }else{                
                 task->file_can_open_ = false;
                 task->error_string_ = tr("Cannot open file %1").arg(task->file_.fileName());
                 emit error(task, task->error_string_);
@@ -178,7 +188,7 @@ void download_supervisor::download_start(std::shared_ptr<download_task> &task)
 
 QString download_supervisor::save_file_name(const download_supervisor::download_task &task) const
 {
-    QFileInfo file_info(task.get_url().path());
+    QFileInfo file_info(task.get_url().toString());
     QString file_name = file_info.fileName();
     if(QFile::exists(task.save_at_ + "/" + file_name)){
         QString const base_name = file_info.baseName();
@@ -187,6 +197,7 @@ QString download_supervisor::save_file_name(const download_supervisor::download_
             complete_suffix = "txt";
         }
         QString new_file_name = base_name + "(0)." + complete_suffix;
+        new_file_name.remove(QRegularExpression("[<>:\"/\\\\\\|\\?\\*]"));
         for(size_t i = 1; QFile::exists(task.save_at_ + "/" + new_file_name); ++i){
             new_file_name = base_name + "(" + QString::number(i) + ")." + complete_suffix;
         }
