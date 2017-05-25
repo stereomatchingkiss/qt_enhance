@@ -168,6 +168,7 @@ void download_supervisor::download_start(std::shared_ptr<download_task> &task)
                 task->file_can_open_ = false;
                 task->error_string_ = tr("Cannot open file %1").arg(task->file_.fileName());
                 emit error(task, task->error_string_);
+                emit download_finished(task);
             }
         }else{
             launch_download_task(task);
