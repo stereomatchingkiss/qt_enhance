@@ -58,7 +58,7 @@ void download_supervisor::start_next_download()
                 break;
             }
         }
-        if(it == std::end(id_table_)){            
+        if(it == std::end(id_table_)){
             emit all_download_finished();
         }
     }else{
@@ -73,12 +73,14 @@ void download_supervisor::process_download_finished()
     }
     auto *reply = qobject_cast<QNetworkReply*>(sender());
     if(reply){
-        auto rit = reply_table_.find(reply);        
+        auto rit = reply_table_.find(reply);
         if(rit != std::end(reply_table_)){
             auto task = rit->second;
             if(reply->error() != QNetworkReply::NoError){
                 task->network_error_code_ = reply->error();
-                task->error_string_ = reply->errorString();
+                if(task->error_string_.isEmpty()){
+                    task->error_string_ = reply->errorString();
+                }
             }
             auto const unique_id = task->unique_id_;
             task->file_.close();
@@ -89,10 +91,10 @@ void download_supervisor::process_download_finished()
                 id_table_.erase(id_it);
             }
             start_next_download();
-        }        
+        }
         reply->deleteLater();
     }else{
-        qDebug()<<__func__<<":QNetworkReply is nullptr";        
+        qDebug()<<__func__<<":QNetworkReply is nullptr";
     }
 }
 
