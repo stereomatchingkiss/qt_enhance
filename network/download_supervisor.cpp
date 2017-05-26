@@ -33,6 +33,18 @@ size_t download_supervisor::append(const QNetworkRequest &request, const QString
     return task->unique_id_;
 }
 
+size_t download_supervisor::append(const QNetworkRequest &request, const QString &save_at,
+                                   int timeout_msec, bool save_as_file)
+{
+     auto const unique_id = append(request, save_at, save_as_file);
+     auto it = id_table_.find(unique_id);
+     if(it != std::end(id_table_)){
+         it->second->timeout_msec_ = timeout_msec;
+     }
+
+    return unique_id;
+}
+
 size_t download_supervisor::get_max_download_file() const
 {
     return max_download_file_;
@@ -86,6 +98,7 @@ void download_supervisor::process_download_finished()
         auto rit = reply_table_.find(reply);
         if(rit != std::end(reply_table_)){
             auto task = rit->second;
+            task->timer_.stop();
             if(reply->error() != QNetworkReply::NoError){
                 task->network_error_code_ = reply->error();
                 if(task->error_string_.isEmpty()){
@@ -98,11 +111,10 @@ void download_supervisor::process_download_finished()
             auto id_it = id_table_.find(unique_id);            
             if(id_it != std::end(id_table_)){
                 id_table_.erase(id_it);
-            }
+            }            
             emit download_finished(task);
             start_next_download();
-        }
-        reply->deleteLater();
+        }        
     }else{
         qDebug()<<__func__<<":QNetworkReply is nullptr";
     }
@@ -125,9 +137,10 @@ void download_supervisor::handle_download_progress(qint64 bytesReceived, qint64 
     qDebug()<<__func__<< " receive "<<bytesReceived;
     qDebug()<<__func__<< " total "<<bytesTotal;
     auto *reply = qobject_cast<QNetworkReply*>(sender());
-    if(reply){
+    if(reply){        
         auto rit = reply_table_.find(reply);
         if(rit != std::end(reply_table_)){
+            restart_timer(*rit->second);
             emit download_progress(rit->second, bytesReceived,
                                    bytesTotal);
         }
@@ -156,21 +169,37 @@ void download_supervisor::ready_read()
 void download_supervisor::launch_download_task(std::shared_ptr<download_supervisor::download_task> task)
 {
     ++total_download_file_;
-    task->network_reply_ = network_access_->get(task->network_request_);
+    task->network_reply_ = network_access_->get(task->network_request_);    
+    restart_timer(*task);
     reply_table_.insert({task->network_reply_, task});
+    connect(&task->timer_, &QTimer::timeout, task->network_reply_, [this, task]()
+    {
+        task->timer_.stop();
+        task->is_timeout_ = true;
+        task->network_reply_->abort();
+    });
     connect(task->network_reply_, static_cast<void(QNetworkReply::*)(QNetworkReply::NetworkError)>(&QNetworkReply::error),
             this, &download_supervisor::error_handle);
     connect(task->network_reply_, &QNetworkReply::readyRead, this, &download_supervisor::ready_read);
     connect(task->network_reply_, static_cast<void(QNetworkReply::*)()>(&QNetworkReply::finished),
             this, &download_supervisor::process_download_finished);
     connect(task->network_reply_, &QNetworkReply::downloadProgress, this, &download_supervisor::handle_download_progress);
+    connect(task->network_reply_, static_cast<void(QNetworkReply::*)()>(&QNetworkReply::finished),
+            task->network_reply_, &QNetworkReply::deleteLater);
+}
+
+void download_supervisor::restart_timer(download_supervisor::download_task &task)
+{
+    if(task.timeout_msec_ > 0){
+        task.timer_.start(task.timeout_msec_);
+    }
 }
 
 void download_supervisor::download_start(std::shared_ptr<download_task> task)
 {
     if(total_download_file_ < max_download_file_){
         if(task->save_as_file_){
-            qDebug()<<task->save_at_ + "/" + save_file_name(*task);
+            qDebug()<<__func__<<":"<<task->save_at_ + "/" + save_file_name(*task);
             task->file_.setFileName(task->save_at_ + "/" + save_file_name(*task));
             if(task->file_.open(QIODevice::WriteOnly)){
                 launch_download_task(task);
@@ -226,6 +255,11 @@ QString const& download_supervisor::download_task::get_save_at() const
 QString download_supervisor::download_task::get_save_as() const
 {
     return file_.fileName();
+}
+
+bool download_supervisor::download_task::get_is_timeout() const
+{
+    return is_timeout_;
 }
 
 size_t download_supervisor::download_task::get_unique_id() const

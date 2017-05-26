@@ -4,9 +4,9 @@
 #include <QFile>
 #include <QNetworkReply>
 #include <QObject>
+#include <QTimer>
 #include <QUrl>
 
-#include <deque>
 #include <map>
 #include <memory>
 
@@ -32,19 +32,23 @@ public:
         QNetworkReply::NetworkError get_network_error_code() const;
         QString const& get_save_at() const;
         QString get_save_as() const;
+        bool get_is_timeout() const;
         size_t get_unique_id() const;
-        QUrl get_url() const;
+        QUrl get_url() const;        
 
     private:
         QByteArray data_;
         QString error_string_;
         QFile file_;
         bool file_can_open_ = true;
+        bool is_timeout_ = false;
         QNetworkReply::NetworkError network_error_code_ = QNetworkReply::NoError;
         QNetworkReply *network_reply_ = nullptr;
         QNetworkRequest network_request_;
         QString save_at_;
         bool save_as_file_ = true;
+        QTimer timer_;
+        int timeout_msec_ = -1;
         size_t unique_id_ = 0;
     };
 
@@ -59,6 +63,16 @@ public:
       * @return unique id for each download request
       */
     size_t append(QNetworkRequest const &request, QString const &save_at, bool save_as_file = true);
+
+    /**
+     * @brief Overload of append, everything are same except this function can
+     * specify timeout_msec
+     * @param timeout_msec If the network request do not have any progress within
+     * timeout_msec, the network request will be aborted
+     */
+    size_t append(QNetworkRequest const &request, QString const &save_at,
+                  int timeout_msec,
+                  bool save_as_file = true);
 
     /**
       * This value determine how many items could be downloaded
@@ -97,8 +111,9 @@ private slots:
 private:
     void download_start(std::shared_ptr<download_task> task);
     void launch_download_task(std::shared_ptr<download_task> task);
-    QString save_file_name(download_task const &task) const;
-    void start_next_download();
+    void restart_timer(download_task &task);
+    QString save_file_name(download_task const &task) const;    
+    void start_next_download();    
 
     std::map<size_t, std::shared_ptr<download_task>> id_table_;
     size_t max_download_file_;
