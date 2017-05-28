@@ -58,11 +58,16 @@ public:
       * Append new data to the download list, this would start download task,
       * call start_download_task to start download
       * @param request url of the data want to download
-      * @param save_at the location you want to save the file at
-      * @param save_as the file name of the download target
+      * @param save_at the location you want to save the file at      
       * @return unique id for each download request
       */
-    size_t append(QNetworkRequest const &request, QString const &save_at, bool save_as_file = true);
+    size_t append(QNetworkRequest const &request, QString const &save_at);
+
+    /**
+     * @brief overload of append, this function will save the download data
+     * in QByteArray rather than write them to a file
+     */
+    size_t append(QNetworkRequest const &request);
 
     /**
      * @brief Overload of append, everything are same except this function can
@@ -71,8 +76,13 @@ public:
      * timeout_msec, the network request will be aborted
      */
     size_t append(QNetworkRequest const &request, QString const &save_at,
-                  int timeout_msec,
-                  bool save_as_file = true);
+                  int timeout_msec);
+
+    /**
+     * @brief overload of append, this function will save the download data
+     * in QByteArray rather than write them to a file
+     */
+    size_t append(QNetworkRequest const &request, int timeout_msec);
 
     /**
       * This value determine how many items could be downloaded
@@ -109,6 +119,7 @@ private slots:
     void ready_read();
 
 private:
+    size_t append(QNetworkRequest const &request, QString const &save_at, int timeout_msec, bool save_as_file);
     void download_start(std::shared_ptr<download_task> task);
     void launch_download_task(std::shared_ptr<download_task> task);
     void restart_timer(download_task &task);

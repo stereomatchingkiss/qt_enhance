@@ -21,28 +21,25 @@ download_supervisor::download_supervisor(QObject *parent)
 {     
 }
 
-size_t download_supervisor::append(const QNetworkRequest &request, const QString &save_at, bool save_as_file)
-{
-    auto task = std::make_shared<download_task>();
-    task->unique_id_ = unique_id_++;
-    task->network_request_ = request;
-    task->save_at_ = save_at;
-    task->save_as_file_ = save_as_file;
-    id_table_.insert({task->unique_id_, task});    
+size_t download_supervisor::append(const QNetworkRequest &request, const QString &save_at)
+{    
+    return append(request, save_at, -1, true);
+}
 
-    return task->unique_id_;
+size_t download_supervisor::append(const QNetworkRequest &request)
+{
+    return append(request, "", -1, false);
 }
 
 size_t download_supervisor::append(const QNetworkRequest &request, const QString &save_at,
-                                   int timeout_msec, bool save_as_file)
-{
-     auto const unique_id = append(request, save_at, save_as_file);
-     auto it = id_table_.find(unique_id);
-     if(it != std::end(id_table_)){
-         it->second->timeout_msec_ = timeout_msec;
-     }
+                                   int timeout_msec)
+{     
+     return append(request, save_at, timeout_msec, true);
+}
 
-    return unique_id;
+size_t download_supervisor::append(const QNetworkRequest &request, int timeout_msec)
+{
+    return append(request, "", timeout_msec, false);
 }
 
 size_t download_supervisor::get_max_download_file() const
@@ -164,6 +161,20 @@ void download_supervisor::ready_read()
     }else{
         qDebug()<<__func__<< ":reply is nullptr or fail to cast from sender()";
     }
+}
+
+size_t download_supervisor::append(const QNetworkRequest &request, const QString &save_at,
+                                   int timeout_msec, bool save_as_file)
+{
+    auto task = std::make_shared<download_task>();
+    task->unique_id_ = unique_id_++;
+    task->network_request_ = request;
+    task->save_at_ = save_at;
+    task->save_as_file_ = save_as_file;
+    task->timeout_msec_ = timeout_msec;
+    id_table_.insert({task->unique_id_, task});
+
+    return task->unique_id_;
 }
 
 void download_supervisor::launch_download_task(std::shared_ptr<download_supervisor::download_task> task)
