@@ -219,7 +219,7 @@ QString download_supervisor::save_file_name(const download_supervisor::download_
 {
     QFileInfo file_info(task.get_url().toString());
     QRegularExpression const re("[<>:\"/\\*\\?\\|\\\\]");
-    QString file_name = file_info.fileName().remove(re);
+    QString file_name = file_info.fileName().remove(re).trimmed();
     if(QFile::exists(task.save_at_ + "/" + file_name)){
         QString const base_name = file_info.baseName();
         QString complete_suffix = file_info.completeSuffix();
@@ -231,7 +231,7 @@ QString download_supervisor::save_file_name(const download_supervisor::download_
             new_file_name = base_name + "(" + QString::number(i) + ")." + complete_suffix;
         }        
 
-        return new_file_name;
+        return new_file_name.trimmed();
     }
 
     return file_name;
