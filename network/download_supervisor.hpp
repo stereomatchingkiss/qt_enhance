@@ -84,6 +84,8 @@ public:
      */
     size_t append(QNetworkRequest const &request, int timeout_msec);
 
+    QNetworkAccessManager* get_network_manager() const;
+
     /**
       * This value determine how many items could be downloaded
       * at the same time

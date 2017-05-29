@@ -42,6 +42,11 @@ size_t download_supervisor::append(const QNetworkRequest &request, int timeout_m
     return append(request, "", timeout_msec, false);
 }
 
+QNetworkAccessManager* download_supervisor::get_network_manager() const
+{
+    return network_access_;
+}
+
 size_t download_supervisor::get_max_download_file() const
 {
     return max_download_file_;
