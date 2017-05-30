@@ -34,7 +34,8 @@ public:
         QString get_save_as() const;
         bool get_is_timeout() const;
         size_t get_unique_id() const;
-        QUrl get_url() const;        
+        QUrl get_url() const;
+        bool remove_file();
 
     private:
         QByteArray data_;

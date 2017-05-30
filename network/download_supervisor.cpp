@@ -1,6 +1,7 @@
 #include "download_supervisor.hpp"
 
 #include <QDebug>
+#include <QFileDevice>
 #include <QFileInfo>
 #include <QNetworkAccessManager>
 #include <QNetworkProxy>
@@ -99,16 +100,16 @@ void download_supervisor::process_download_finished()
     if(reply){
         auto rit = reply_table_.find(reply);
         if(rit != std::end(reply_table_)){
-            auto task = rit->second;
+            auto task = rit->second;            
             task->timer_.stop();
+            task->file_.close();
             if(reply->error() != QNetworkReply::NoError){
                 task->network_error_code_ = reply->error();
                 if(task->error_string_.isEmpty()){
                     task->error_string_ = reply->errorString();
                 }
             }
-            auto const unique_id = task->unique_id_;
-            task->file_.close();
+            auto const unique_id = task->unique_id_;            
             reply_table_.erase(rit);
             auto id_it = id_table_.find(unique_id);            
             if(id_it != std::end(id_table_)){
@@ -286,6 +287,11 @@ size_t download_supervisor::download_task::get_unique_id() const
 QUrl download_supervisor::download_task::get_url() const
 {
     return network_request_.url();
+}
+
+bool download_supervisor::download_task::remove_file()
+{
+    return file_.remove();
 }
 
 } //namespace net
