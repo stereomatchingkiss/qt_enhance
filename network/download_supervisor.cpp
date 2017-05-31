@@ -91,7 +91,7 @@ void download_supervisor::start_next_download()
     }
 }
 
-void download_supervisor::process_download_finished()
+void download_supervisor::handle_download_finished()
 {
     if(total_download_file_ > 0){
         --total_download_file_;
@@ -123,7 +123,7 @@ void download_supervisor::process_download_finished()
     }
 }
 
-void download_supervisor::error_handle(QNetworkReply::NetworkError)
+void download_supervisor::handle_error(QNetworkReply::NetworkError)
 {
     auto *reply = qobject_cast<QNetworkReply*>(sender());
     if(reply){
@@ -150,7 +150,7 @@ void download_supervisor::handle_download_progress(qint64 bytesReceived, qint64 
     }
 }
 
-void download_supervisor::ready_read()
+void download_supervisor::handle_ready_read()
 {
     auto *reply = qobject_cast<QNetworkReply*>(sender());
     if(reply){
@@ -196,10 +196,10 @@ void download_supervisor::launch_download_task(std::shared_ptr<download_supervis
         task->network_reply_->abort();
     });
     connect(task->network_reply_, static_cast<void(QNetworkReply::*)(QNetworkReply::NetworkError)>(&QNetworkReply::error),
-            this, &download_supervisor::error_handle);
-    connect(task->network_reply_, &QNetworkReply::readyRead, this, &download_supervisor::ready_read);
+            this, &download_supervisor::handle_error);
+    connect(task->network_reply_, &QNetworkReply::readyRead, this, &download_supervisor::handle_ready_read);
     connect(task->network_reply_, static_cast<void(QNetworkReply::*)()>(&QNetworkReply::finished),
-            this, &download_supervisor::process_download_finished);
+            this, &download_supervisor::handle_download_finished);
     connect(task->network_reply_, &QNetworkReply::downloadProgress, this, &download_supervisor::handle_download_progress);
     connect(task->network_reply_, static_cast<void(QNetworkReply::*)()>(&QNetworkReply::finished),
             task->network_reply_, &QNetworkReply::deleteLater);

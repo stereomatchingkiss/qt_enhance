@@ -115,18 +115,16 @@ signals:
 
     void error(std::shared_ptr<download_task> task, QString const &error_msg);
 
-private slots:
-    void process_download_finished();
-    void error_handle(QNetworkReply::NetworkError code);
-    void handle_download_progress(qint64 bytesReceived, qint64 bytesTotal);
-    void ready_read();
-
 private:
     size_t append(QNetworkRequest const &request, QString const &save_at, int timeout_msec, bool save_as_file);
     void download_start(std::shared_ptr<download_task> task);
+    void handle_download_finished();
+    void handle_download_progress(qint64 bytesReceived, qint64 bytesTotal);
+    void handle_error(QNetworkReply::NetworkError code);
+    void handle_ready_read();
     void launch_download_task(std::shared_ptr<download_task> task);
     void restart_timer(download_task &task);
-    QString save_file_name(download_task const &task) const;    
+    QString save_file_name(download_task const &task) const;
     void start_next_download();    
 
     std::map<size_t, std::shared_ptr<download_task>> id_table_;
