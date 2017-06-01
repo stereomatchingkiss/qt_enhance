@@ -10,7 +10,7 @@ namespace utils{
 
 QString unique_file_name(QString const &save_at, QString const &file_name)
 {
-    QRegularExpression const re("[<>:\"/\\*\\?\\|\\\\]");
+    QRegularExpression const re("[<>:\\\"/\\*\\?\\|\\\\]");
     auto valid_file_name = file_name;
     valid_file_name = valid_file_name.remove(re).trimmed();
     if(QFile::exists(save_at + "/" + file_name)){
