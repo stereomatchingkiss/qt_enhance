@@ -34,8 +34,7 @@ public:
         QString get_save_as() const;
         bool get_is_timeout() const;
         size_t get_unique_id() const;
-        QUrl get_url() const;
-        bool remove_file();
+        QUrl get_url() const;        
 
     private:
         QByteArray data_;
@@ -123,8 +122,7 @@ private:
     void handle_error(QNetworkReply::NetworkError code);
     void handle_ready_read();
     void launch_download_task(std::shared_ptr<download_task> task);
-    void restart_timer(download_task &task);
-    QString save_file_name(download_task const &task) const;
+    void restart_timer(download_task &task);    
     void start_next_download();    
 
     std::map<size_t, std::shared_ptr<download_task>> id_table_;

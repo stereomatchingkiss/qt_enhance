@@ -1,4 +1,5 @@
 #include "download_supervisor.hpp"
+#include "../utility/qte_utility.hpp"
 
 #include <QDebug>
 #include <QFileDevice>
@@ -216,8 +217,9 @@ void download_supervisor::download_start(std::shared_ptr<download_task> task)
 {
     if(total_download_file_ < max_download_file_){
         if(task->save_as_file_){
-            qDebug()<<__func__<<":"<<task->save_at_ + "/" + save_file_name(*task);
-            task->file_.setFileName(task->save_at_ + "/" + save_file_name(*task));
+            auto const unique_name = utils::unique_file_name(task->save_at_, QFileInfo(task->get_url().toString()).fileName());
+            qDebug()<<__func__<<":"<<task->save_at_ + "/" + unique_name;
+            task->file_.setFileName(task->save_at_ + "/" + unique_name);
             if(task->file_.open(QIODevice::WriteOnly)){
                 launch_download_task(task);
             }else{                
@@ -230,28 +232,6 @@ void download_supervisor::download_start(std::shared_ptr<download_task> task)
             launch_download_task(task);
         }
     }
-}
-
-QString download_supervisor::save_file_name(const download_supervisor::download_task &task) const
-{
-    QFileInfo file_info(task.get_url().toString());
-    QRegularExpression const re("[<>:\"/\\*\\?\\|\\\\]");
-    QString file_name = file_info.fileName().remove(re).trimmed();
-    if(QFile::exists(task.save_at_ + "/" + file_name)){
-        QString const base_name = file_info.baseName();
-        QString complete_suffix = file_info.completeSuffix();
-        if(complete_suffix.isEmpty()){
-            complete_suffix = "txt";
-        }
-        QString new_file_name = base_name + "(0)." + complete_suffix;        
-        for(size_t i = 1; QFile::exists(task.save_at_ + "/" + new_file_name); ++i){
-            new_file_name = base_name + "(" + QString::number(i) + ")." + complete_suffix;
-        }        
-
-        return new_file_name.trimmed();
-    }
-
-    return file_name;
 }
 
 const QString &download_supervisor::download_task::get_error_string() const
@@ -287,11 +267,6 @@ size_t download_supervisor::download_task::get_unique_id() const
 QUrl download_supervisor::download_task::get_url() const
 {
     return network_request_.url();
-}
-
-bool download_supervisor::download_task::remove_file()
-{
-    return file_.remove();
 }
 
 } //namespace net
