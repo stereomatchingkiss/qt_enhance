@@ -13,7 +13,7 @@ QString unique_file_name(QString const &save_at, QString const &file_name)
     QRegularExpression const re("[<>:\\\"/\\*\\?\\|\\\\]");
     auto valid_file_name = file_name;
     valid_file_name = valid_file_name.remove(re).trimmed();
-    if(QFile::exists(save_at + "/" + file_name)){
+    if(QFile::exists(save_at + "/" + valid_file_name)){
         QFileInfo file_info(valid_file_name);
         QString const base_name = file_info.baseName();
         QString complete_suffix = file_info.completeSuffix();
@@ -25,7 +25,7 @@ QString unique_file_name(QString const &save_at, QString const &file_name)
         return new_file_name.trimmed();
     }
 
-    return file_name;
+    return valid_file_name;
 }
 
 }
