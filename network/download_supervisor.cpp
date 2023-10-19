@@ -190,14 +190,13 @@ void download_supervisor::launch_download_task(std::shared_ptr<download_supervis
     task->network_reply_ = network_access_->get(task->network_request_);    
     restart_timer(*task);
     reply_table_.insert({task->network_reply_, task});
-    connect(&task->timer_, &QTimer::timeout, task->network_reply_, [this, task]()
+    connect(&task->timer_, &QTimer::timeout, task->network_reply_, [task]()
     {
         task->timer_.stop();
         task->is_timeout_ = true;
         task->network_reply_->abort();
     });
-    connect(task->network_reply_, static_cast<void(QNetworkReply::*)(QNetworkReply::NetworkError)>(&QNetworkReply::error),
-            this, &download_supervisor::handle_error);
+    connect(task->network_reply_, &QNetworkReply::errorOccurred, this, &download_supervisor::handle_error);
     connect(task->network_reply_, &QNetworkReply::readyRead, this, &download_supervisor::handle_ready_read);
     connect(task->network_reply_, static_cast<void(QNetworkReply::*)()>(&QNetworkReply::finished),
             this, &download_supervisor::handle_download_finished);
